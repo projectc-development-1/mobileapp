@@ -13,6 +13,10 @@ https://expo.dev/blog/how-to-build-a-bluetooth-low-energy-powered-expo-app
 https://github.com/friyiajr/BLEExpoBlog
 
 
+Expo account
+https://expo.dev/accounts/development.1
+
+
 Cocoapods
 1. use brew install cocoapods
 2. brew link cocoapods
