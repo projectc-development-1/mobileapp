@@ -21,7 +21,8 @@
         "android.permission.BLUETOOTH",
         "android.permission.BLUETOOTH_ADMIN",
         "android.permission.BLUETOOTH_CONNECT"
-      ]
+      ],
+      "package": "com.anonymous.bluetoothtesting"
     },
     "web": {
       "bundler": "metro",
@@ -53,6 +54,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "290d6974-503e-482c-a976-f594f67f2d6f"
+      }
     }
   }
 }

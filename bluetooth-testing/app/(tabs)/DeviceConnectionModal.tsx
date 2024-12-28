@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from "react";
+import React, { FC, useCallback, useState } from "react";
 import {
   FlatList,
   ListRenderItemInfo,
@@ -7,8 +7,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Button,
 } from "react-native";
 import { Device } from "react-native-ble-plx";
+import index from "./index";
 
 type DeviceModalListItemProps = {
   item: ListRenderItemInfo<Device>;
@@ -59,6 +61,11 @@ const DeviceModal: FC<DeviceModalProps> = (props) => {
     [closeModal, connectToPeripheral]
   );
 
+  const handleClose = () => {
+    console.log("Modal is closing");
+    closeModal();
+  };
+
   return (
     <Modal
       style={modalStyle.modalContainer}
@@ -74,6 +81,12 @@ const DeviceModal: FC<DeviceModalProps> = (props) => {
           contentContainerStyle={modalStyle.modalFlatlistContiner}
           data={devices}
           renderItem={renderDeviceModalListItem}
+        />
+        <Button
+          onPress={handleClose}
+          title="Close"
+          color="#841584"
+          accessibilityLabel="Close this modal"
         />
       </SafeAreaView>
     </Modal>

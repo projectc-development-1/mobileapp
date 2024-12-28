@@ -1,4 +1,6 @@
 /* eslint-disable no-bitwise */
+require('punycode/');
+
 import { useMemo, useState } from "react";
 import { PermissionsAndroid, Platform } from "react-native";
 
