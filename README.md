@@ -33,6 +33,7 @@ BleManager() -- Your JavaScript code tried to access a native module that doesn'
 ############################################################################################################################
 Expo account
 https://expo.dev/accounts/development.1
+https://expo.dev/accounts/development.1/projects/bluetooth-testing
 
 ############################################################################################################################
 Cocoapods
