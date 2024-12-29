@@ -6,35 +6,26 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import DeviceModal from "./DeviceConnectionModal";
 import useBLE from "../../useBLE";
 
 const App = () => {
   const {
-    allDevices,
     connectedDevice,
-    connectToDevice,
     color,
     requestPermissions,
     scanForPeripherals,
+    getBluetoothSearchResults,
   } = useBLE();
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
   const scanForDevices = async () => {
     const isPermissionsEnabled = await requestPermissions();
     if (isPermissionsEnabled) {
       scanForPeripherals();
+      console.log("Device Found", getBluetoothSearchResults());
     }
   };
 
-  const hideModal = () => {
-    setIsModalVisible(false);
-  };
-
-  const openModal = async () => {
-    scanForDevices();
-    setIsModalVisible(true);
-  };
+  scanForDevices();
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: color }]}>
@@ -49,15 +40,6 @@ const App = () => {
           </Text>
         )}
       </View>
-      <TouchableOpacity onPress={openModal} style={styles.ctaButton}>
-        <Text style={styles.ctaButtonText}>Connect</Text>
-      </TouchableOpacity>
-      <DeviceModal
-        closeModal={hideModal}
-        visible={isModalVisible}
-        connectToPeripheral={connectToDevice}
-        devices={allDevices}
-      />
     </SafeAreaView>
   );
 };
@@ -100,3 +82,7 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+
+function getBluetoothSearchResults(): any {
+    throw new Error("Function not implemented.");
+}

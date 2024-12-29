@@ -21,10 +21,14 @@ const COLOR_CHARACTERISTIC_UUID = "19b10001-e8f2-537e-4f6c-d104768a1217";
 
 const bleManager = new BleManager();
 
+let bluetoothSearchResults: { id: string; name: string | null; }[] = [];
+
 function useBLE() {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [color, setColor] = useState("white");
+
+  const getBluetoothSearchResults = () => bluetoothSearchResults;
 
   const requestAndroid31Permissions = async () => {
     const bluetoothScanPermission = await PermissionsAndroid.request(
@@ -104,6 +108,8 @@ function useBLE() {
         console.log(error);
       }
 
+      bluetoothSearchResults = [];
+
       if (
         device 
         && device.isConnectable
@@ -111,6 +117,7 @@ function useBLE() {
       ) {
         setAllDevices((prevState: Device[]) => {
           if (!isDuplicteDevice(prevState, device)) {
+            bluetoothSearchResults.push({id: device.id, name: device.name ?? device.localName});
             return [...prevState, device];
           }
           return prevState;
@@ -163,6 +170,7 @@ function useBLE() {
     color,
     requestPermissions,
     scanForPeripherals,
+    getBluetoothSearchResults,
     startStreamingData,
   };
 }
