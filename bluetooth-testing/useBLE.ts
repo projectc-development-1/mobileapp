@@ -105,8 +105,8 @@ function useBLE() {
       }
 
       if (
-        device &&
-        (device.localName === "Arduino" || device.name === "Arduino")
+        device 
+        && device.isConnectable
       ) {
         setAllDevices((prevState: Device[]) => {
           if (!isDuplicteDevice(prevState, device)) {
