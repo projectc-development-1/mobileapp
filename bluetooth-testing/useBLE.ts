@@ -12,6 +12,7 @@ import {
   BleManager,
   Characteristic,
   Device,
+  ScanMode,
 } from "react-native-ble-plx";
 
 
@@ -21,14 +22,10 @@ const COLOR_CHARACTERISTIC_UUID = "19b10001-e8f2-537e-4f6c-d104768a1217";
 
 const bleManager = new BleManager();
 
-let bluetoothSearchResults: { id: string; name: string | null; }[] = [];
-
 function useBLE() {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [color, setColor] = useState("white");
-
-  const getBluetoothSearchResults = () => bluetoothSearchResults;
 
   const requestAndroid31Permissions = async () => {
     const bluetoothScanPermission = await PermissionsAndroid.request(
@@ -102,27 +99,44 @@ function useBLE() {
   const isDuplicteDevice = (devices: Device[], nextDevice: Device) =>
     devices.findIndex((device) => nextDevice.id === device.id) > -1;
 
-  const scanForPeripherals = () =>
-    bleManager.startDeviceScan(null, null, (error, device) => {
-      if (error) {
+    const scanForPeripheralsInLowPower = () =>
+    bleManager.startDeviceScan(null, { scanMode: ScanMode.LowPower }, (error, device) => {
+        if (error) {
         console.log(error);
-      }
+        }
 
-      bluetoothSearchResults = [];
+        if (
+        device 
+        //&& device.isConnectable
+        //&& (device.name != null || device.localName != null)
+        ) {
+        setAllDevices((prevState: Device[]) => {
+            if (!isDuplicteDevice(prevState, device)) {
+            return [...prevState, device];
+            }
+            return prevState;
+        });
+        }
+    });
 
-      if (
+    const scanForPeripheralsInOpportunistic = () =>
+    bleManager.startDeviceScan(null, { scanMode: ScanMode.Opportunistic }, (error, device) => {
+        if (error) {
+        console.log(error);
+        }
+
+        if (
         device 
         && device.isConnectable
         && (device.name != null || device.localName != null)
-      ) {
+        ) {
         setAllDevices((prevState: Device[]) => {
-          if (!isDuplicteDevice(prevState, device)) {
-            bluetoothSearchResults.push({id: device.id, name: device.name ?? device.localName});
+            if (!isDuplicteDevice(prevState, device)) {
             return [...prevState, device];
-          }
-          return prevState;
+            }
+            return prevState;
         });
-      }
+        }
     });
 
   const onDataUpdate = (
@@ -169,8 +183,8 @@ function useBLE() {
     connectedDevice,
     color,
     requestPermissions,
-    scanForPeripherals,
-    getBluetoothSearchResults,
+    scanForPeripheralsInLowPower,
+    scanForPeripheralsInOpportunistic,
     startStreamingData,
   };
 }

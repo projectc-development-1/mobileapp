@@ -6,7 +6,8 @@ import {
   StyleSheet,
   Text,
   View,
-  Button
+  Button,
+  ScrollView
 } from "react-native";
 import useBLE from "../../useBLE";
 import * as Device from 'expo-device';
@@ -14,44 +15,29 @@ import * as Device from 'expo-device';
 
 const App = () => {
   const {
-    connectedDevice,
     color,
-    requestPermissions,
-    scanForPeripherals,
-    allDevices,
+    scanForPeripheralsInLowPower,
+    scanForPeripheralsInOpportunistic,
+    allDevices
   } = useBLE();
-
-  const [refreshButtonTitle, setRefreshButtonTitle] = useState('Refresh');
-  const [refreshButtonDisable, setRefreshButtonDisable] = useState(false);
   
+  let scanForPeripheralsMode = 1;
 
   useEffect(() => {
-    console.log(Device.modelName);
-    console.log(Device.osName);
-    console.log(Device.osVersion);
+    setInterval(() => {
+        //console.log(Device.deviceName + " Scanning for devices" + " at " + new Date().toLocaleTimeString() );
+        if(scanForPeripheralsMode % 2 == 0) {
+            scanForPeripheralsInLowPower();
+        }else{
+            scanForPeripheralsInOpportunistic();
+        }
+        scanForPeripheralsMode++;
+        for (let i = 0; i < allDevices.length; i++) {
+          //console.log("Device Found - ", allDevices[i].name, allDevices[i].serviceUUIDs);
+        }
+    }, 5000);
   }, []);
 
-  const scanForDevices = async () => {
-    const isPermissionsEnabled = await requestPermissions();
-    if (isPermissionsEnabled) {
-      const result = scanForPeripherals();
-      for (let i = 0; i < allDevices.length; i++) {
-        console.log("Device Found - ", allDevices[i].name, allDevices[i].id);
-      }
-    }
-    let countdown = 3;
-    setRefreshButtonDisable(true);
-    const intervalId = setInterval(() => {
-      if (countdown > 0) {
-        countdown--;
-        setRefreshButtonTitle('Refresh (' + countdown + ')');
-      } else {
-        setRefreshButtonDisable(false);
-        setRefreshButtonTitle('Refresh');
-        clearInterval(intervalId);
-      }
-    }, 1000);
-  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: color }]}>
@@ -60,23 +46,25 @@ const App = () => {
         <Text>OS Name: {Device.osName}</Text>
         <Text>OS Version: {Device.osVersion}</Text>
       </View>
-      <View style={styles.heartRateTitleWrapper}>
-        <Text style={styles.heartRateTitleText}>none</Text>
-        {connectedDevice ? (
-          <>
-            <Text style={styles.heartRateTitleText}>Connected</Text>
-          </>
-        ) : (
-          <Text style={styles.heartRateTitleText}>
-            Please connect the Arduino
-          </Text>
-        )}
-        <Button
-            disabled={refreshButtonDisable}
-            onPress={scanForDevices}
-            title={refreshButtonTitle}
-        />
-      </View>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>All Devices:</Text>
+      <ScrollView>
+        <View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text>Device Name</Text>
+            <Text>Device ID</Text>
+            <Text>RSSI</Text>
+          </View>
+          {allDevices.map((device, index) => (
+            <View key={index} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text>{device.name || device.localName}</Text>
+              <Text>{device.id}</Text>
+              <Text>{device.rssi}</Text>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    </View>
     </SafeAreaView>
   );
 };
@@ -101,3 +89,7 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+
+function scanForDevices() {
+    throw new Error("Function not implemented.");
+}

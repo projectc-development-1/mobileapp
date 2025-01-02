@@ -10,10 +10,19 @@ npx expo start   (generate QR code)
 
 
 Run the app in IOS simulator
-npx expo run:ios  (run local simulator)
+npx expo run:ios  (run local simulator / ios device that you may need to run in Xcode)
+npx expo run:android  (run local simulator / ios device that you may need to run in Android Studio)
 
 
-Build the app
+creates the android and ios directories for running your React code
+npx expo prebuild
+
+
+Clean project
+npx expo prebuild --clean
+
+
+Deploy the app
 https://docs.expo.dev/build/setup/
 eas build --platform ios
 
