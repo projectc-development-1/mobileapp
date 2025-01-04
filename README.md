@@ -10,8 +10,8 @@ npx expo start   (generate QR code)
 
 
 Run the app in IOS simulator
-npx expo run:ios  (run local simulator / ios device that you may need to run in Xcode)
-npx expo run:android  (run local simulator / ios device that you may need to run in Android Studio)
+npx expo run:ios --device (run local simulator / ios device that you may need to run in Xcode)
+npx expo run:android --device (run local simulator / ios device that you may need to run in Android Studio)
 
 
 creates the android and ios directories for running your React code
