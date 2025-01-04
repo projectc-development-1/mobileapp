@@ -1,4 +1,4 @@
-require('punycode/')
+//require('punycode/')
 
 import React, { useState, useEffect } from 'react';
 import { Platform, Text, View, StyleSheet, SafeAreaView } from 'react-native';
@@ -7,11 +7,15 @@ import * as Location from 'expo-location';
 import MapView, {Marker} from 'react-native-maps';
 
 export default function App() {
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [selflocation, setSelfLocation] = useState<Location.LocationObject | null>(null);
+  const [alllocation, setAllLocations] = useState<Location.LocationObject[] | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  
   useEffect(() => {
-    async function getCurrentLocation() {
+    let subscription: Location.LocationSubscription | null = null;
+
+    async function getSelfLocation() {
       if (Platform.OS === 'android' && !Device.isDevice) {
         setErrorMsg(
           'Oops, this will not work on Snack in an Android Emulator. Try it on your device!'
@@ -24,38 +28,109 @@ export default function App() {
         return;
       }
 
-      let location = await Location.getCurrentPositionAsync({});
-      console.log(location);
-      setLocation(location);
+      subscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 5000,
+          distanceInterval: 1,
+        },
+        (newLocation) => {
+          setSelfLocation(newLocation);
+        }
+      );
     }
 
-    getCurrentLocation();
-  }, []);
+    async function getAllLocation() {
+        const dummyLocations: Location.LocationObject[] = [];
+        dummyLocations.push(
+            {
+                coords: {
+                    latitude: 0,
+                    longitude: 0,
+                    altitude: null,
+                    accuracy: null,
+                    altitudeAccuracy: null,
+                    heading: null,
+                    speed: null
+                },
+                timestamp: 0
+            },
+            {
+                coords: {
+                    latitude: 22.370920562114932, 
+                    longitude: 114.08332432234569,
+                    altitude: 14.371987,
+                    accuracy: 13.387766,
+                    altitudeAccuracy: 30,
+                    heading: -1,
+                    speed: -1,
+                },
+                timestamp: Date.now(),
+            },
+            {
+                coords: {
+                    latitude: 22.370920562114932, 
+                    longitude: 113.9508017423441,
+                    altitude: 14.371987,
+                    accuracy: 13.387766,
+                    altitudeAccuracy: 30,
+                    heading: -1,
+                    speed: -1,
+                },
+                timestamp: Date.now(),
+            },
+            {
+                coords: {
+                    latitude: 22.377905035842414, 
+                    longitude: 113.98376072597144,
+                    altitude: 14.371987,
+                    accuracy: 13.387766,
+                    altitudeAccuracy: 30,
+                    heading: -1,
+                    speed: -1,
+                },
+                timestamp: Date.now(),
+            }
+        )
+        setAllLocations(dummyLocations);
+    }
 
-  let text = 'Waiting...';
-  if (errorMsg) {
-    text = errorMsg;
-  } else if (location) {
-    text = JSON.stringify(location);
-  }
+    getSelfLocation();
+    getAllLocation();
+
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, []);
  
   return (
     <SafeAreaView style={{height: '100%'}}>
       <View style={{ flex: 3, justifyContent: 'center', alignItems: 'center' }}>
         <MapView style={styles.map}>
-        {location && (
+        {selflocation && (
           <Marker
-            coordinate={{latitude: location.coords.latitude, longitude: location.coords.longitude}}
-            title="Your Location"
-            description="This is where you are"
-            image={require('../../assets/images/icon.png')}
+            key={0}
+            coordinate={{latitude: selflocation.coords.latitude, longitude: selflocation.coords.longitude}}
+            image={require('../../assets/images/icon30X30.png')}
           />
         )}
+        {alllocation && alllocation.slice(1).map((all_location, index) => (
+          <Marker
+            key={index+1}
+            coordinate={{latitude: all_location.coords.latitude, longitude: all_location.coords.longitude}}
+            image={require('../../assets/images/icon30X30.png')}
+          />
+        ))}
         </MapView>
       </View>
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        {location && (
-            <Text style={styles.paragraph}>{text}</Text>
+        {selflocation && (
+          <>
+            <Text style={styles.paragraph}>{new Date(selflocation.timestamp).toISOString().replace('T', ' ').substring(0, 19)}</Text>
+            <Text style={styles.paragraph}>{JSON.stringify(selflocation.coords)}</Text>
+          </>
         )}
       </View>
     </SafeAreaView> 
