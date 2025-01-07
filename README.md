@@ -51,3 +51,9 @@ Cocoapods
 
 
 
+
+#########################################################################################################################
+necessary library
+1. react-native-gifted-chat
+2. react-native-maps
+3. react-native-vector-icons
