@@ -12,11 +12,8 @@ https://docs.expo.dev/versions/latest/sdk/map-view/
 
 
 
-Necessary packages #################################
-
-
-Comment command #################################
-npx create-expo-app@latest
+Common command #################################
+expo init [project name]
 npx expo prebuild
 npx expo prebuild --clean
 npx expo start
