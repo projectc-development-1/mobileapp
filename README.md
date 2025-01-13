@@ -4,12 +4,15 @@ npm install expo
 npx pod-install
 https://docs.expo.dev/bare/installing-expo-modules/
 
-npx expo install expo-location
-https://docs.expo.dev/versions/latest/sdk/location/
+expo install expo-location
+expo install react-native-maps
+expo install expo-device
+expo install expo-task-manager
 
-npx expo install react-native-maps
-https://docs.expo.dev/versions/latest/sdk/map-view/
 
+
+Google API kys #################################
+https://console.cloud.google.com/google/maps-apis/credentials?authuser=4&hl=zh-tw&inv=1&invt=AbmRZg&project=cosmic-inkwell-447205-v1
 
 
 Common command #################################
