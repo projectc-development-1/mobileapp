@@ -1,57 +1,61 @@
 import * as SecureStore from 'expo-secure-store';
-
+import * as Location from 'expo-location';
+import commonFunctions from './commonFunctions';
+import locationCommunication from './locationCommunication';
 
 export default function HealthCheck() {
-    //Check required network access
-    const checkNetworkAccess = async () => {
-        console.log('Checking network access');
-        const networkAccess = await SecureStore.getItemAsync('networkAccess');
-        if (networkAccess === null) {
-            throw new Error('Network access not found');
-        }
-    }
+
+    const{
+        languageSwitcher,
+        setDataToDevice,
+        getDataFromDevice
+    } = commonFunctions();
 
     //Check required location access
     const checkLocationAccess = async () => {
         console.log('Checking location access');
-        const locationAccess = await SecureStore.getItemAsync('locationAccess');
-        if (locationAccess === null) {
-            throw new Error('Location access not found');
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            return false;
         }
-    }
-
-    //Check device network status
-    const checkNetworkStatus = async () => {
-        console.log('Checking network status');
-        const networkStatus = await SecureStore.getItemAsync('networkStatus');
-        if (networkStatus === null) {
-            throw new Error('Network status not found');
-        }
+        return true;
     }
 
     //Check device location status
-    const checkLocationStatus = async () => {
+    const checkLocationStatus = () => {
         console.log('Checking location status');
-        const locationStatus = await SecureStore.getItemAsync('locationStatus');
-        if (locationStatus === null) {
-            throw new Error('Location status not found');
+        const locationStatus = Location.hasServicesEnabledAsync();
+        if (!locationStatus) {
+            return false;
         }
+        return true;
+    }
+
+    //Check account name
+    const checkLanguage = async () => {
+        console.log('Checking language');
+        const language = await SecureStore.getItemAsync('language');
+        if (!language) {
+            return false;
+        }
+        languageSwitcher(language);
+        return true;
     }
 
     //Check account name
     const checkAccountName = async () => {
         console.log('Checking account name');
         const accountName = await SecureStore.getItemAsync('accountName');
-        if (accountName === null) {
-            throw new Error('Account name not found');
+        if (!accountName) {
+            return false;
         }
+        return true;
     }
 
     return {
-        checkNetworkAccess,
         checkLocationAccess,
-        checkNetworkStatus,
         checkLocationStatus,
-        checkAccountName
+        checkLanguage,
+        checkAccountName,
     };
 }

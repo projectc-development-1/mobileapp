@@ -1,60 +1,41 @@
-import { useState } from "react";
 import * as Location from 'expo-location';
 import { Platform } from "react-native";
 import * as Device from 'expo-device';
 
-function UpdateLocation (){
-    const [selflocation, setSelfLocation] = useState<Location.LocationObject | null>(null);
-    const [otherlocation, setOtherLocations] = useState<Location.LocationObject[] | null>(null);
+export default function updateLocation (){
 
+    let alllocation: Location.LocationObject[] = [];
     let subscription: Location.LocationSubscription | null = null;
 
-    async function getSelfLocation() {
-        
+    const getSelfLocation = async () => {
         if (Platform.OS === 'android' && !Device.isDevice) {
-            console.log(
-            'Oops, this will not work on Snack in an Android Emulator. Try it on your device!'
-            );
-            return;
+            console.log('Oops, this will not work on Snack in an Android Emulator. Try it on your device!');
         }
         
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
             console.log('Permission to access location was denied');
-            return;
         }
         
-        subscription = await Location.watchPositionAsync(
-            {
-            accuracy: Location.Accuracy.High,
-            timeInterval: 5000,
-            //distanceInterval: 1,
-            },
-            (newLocation) => {
-                if (newLocation){
-                    console.log(newLocation);
-                    setSelfLocation(newLocation);
+        if (subscription==null){
+            subscription = await Location.watchPositionAsync(
+                {
+                accuracy: Location.Accuracy.High
+                }, 
+                (newLocation) => {
+                    if (newLocation){
+                        return newLocation;
+                    }
                 }
-            }
-        );
-
+            );
+        }
+        return Location.getLastKnownPositionAsync();
     }
 
-    async function getOtherLocation() {
-        const dummyLocations = [];
+    const getOtherLocation = async () => {
+        const dummyLocations: any[] = [];
+        /*
         dummyLocations.push(
-            {
-                coords: {
-                    latitude: 0,
-                    longitude: 0,
-                    altitude: null,
-                    accuracy: null,
-                    altitudeAccuracy: null,
-                    heading: null,
-                    speed: null
-                },
-                timestamp: 0
-            },
             {
                 coords: {
                     latitude: 22.370920562114932, 
@@ -91,16 +72,51 @@ function UpdateLocation (){
                 },
                 timestamp: Date.now(),
             }
-        )
-        setOtherLocations(dummyLocations);
+        );
+        */
+        fetch('https://8jf471h04j.execute-api.ap-south-1.amazonaws.com/userLocationCommunication', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "action" : "communication",
+                "data": {
+                    "action": "SELECT"
+                }
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            for (let i=0; i<data.length; i++){
+                dummyLocations.push(
+                    {
+                        coords: data[i]['coords'],
+                        timestamp: data[i]['timestamp']
+                    }
+                );
+            }
+            return dummyLocations;
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });        
+        return dummyLocations;
+    }
+
+    const getAllLocation = async () => {
+        alllocation = [];
+        alllocation.push(... await getOtherLocation());
+        let selfLocation = await getSelfLocation();
+        if (selfLocation){
+            alllocation.unshift(selfLocation);
+        }
+        return alllocation;
     }
 
     return {
         getSelfLocation,
         getOtherLocation,
-        selflocation,
-        otherlocation
+        getAllLocation
     };
 }
-
-export default UpdateLocation;
