@@ -7,7 +7,12 @@ import TargetProfileModalChatTab from '@/pages/targetProfileModalChatTab';
 interface MapProps {
     selfAccountName: string;
     targetAccountName: string;
+    closeTargetProfileModal: () => void;
 }
+
+const LazyLoadingPlaceholder: React.FC = () => (
+    <Text>Loading…</Text>
+);
 
 const ChatRoute: React.FC<{ targetAccountName: string }> = ({ targetAccountName }) => (
     <TargetProfileModalChatTab targetAccountName={targetAccountName} />
@@ -19,7 +24,7 @@ const NotesRoute: React.FC<{ targetAccountName: string }> = ({ targetAccountName
     <View style={{ flex: 1, backgroundColor: '#673ab7' }} />
 );
 
-const Map: React.FC<MapProps> = ({ selfAccountName, targetAccountName }) => {
+const Map: React.FC<MapProps> = ({ selfAccountName, targetAccountName, closeTargetProfileModal }) => {
     const { t } = useTranslation();
     const layout = useWindowDimensions();
     const [index, setIndex] = React.useState(0);
@@ -30,18 +35,18 @@ const Map: React.FC<MapProps> = ({ selfAccountName, targetAccountName }) => {
         { key: 'Notes', title: t('Notes') }
     ];
 
-    const renderScene = SceneMap({
-        Chat: () => <ChatRoute targetAccountName={targetAccountName} />,
-        Information: () => <InformationRoute targetAccountName={targetAccountName} />,
-        Notes: () => <NotesRoute targetAccountName={targetAccountName} />
-    });
-
     return (
         <View style={styles.container}>
             <TabView
+                lazy
                 style={styles.tabView}
                 navigationState={{ index, routes }}
-                renderScene={renderScene}
+                renderLazyPlaceholder={LazyLoadingPlaceholder}
+                renderScene={SceneMap({
+                    Chat: () => <ChatRoute targetAccountName={targetAccountName} />,
+                    Information: () => <InformationRoute targetAccountName={targetAccountName} />,
+                    Notes: () => <NotesRoute targetAccountName={targetAccountName} />
+                  })}
                 onIndexChange={setIndex}
                 initialLayout={{ width: layout.width }}
             />
@@ -56,14 +61,16 @@ const styles = StyleSheet.create({
     container: {
         borderRadius: 30,
         position: 'absolute',
-        top: '10%',
-        left: '10%',
+        top: '15%',
+        left: '15%',
         alignItems: 'center',
-        width: '80%',
-        height: '80%',
+        width: '70%',
+        height: '70%',
+        backgroundColor: 'rgba(255, 255, 255, 0.8)', // Set background color with transparency
     },
     tabView: {
         borderRadius: 30,
+        backgroundColor: 'rgba(255, 255, 255, 0.8)', // Set background color with transparency
     },
     button: {
         width: '33%',

@@ -150,10 +150,15 @@ const Map = () => {
     let [targetAccountName, setTargetAccountName] = useState<string>('');
 
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} >
             <MapView 
                 style={styles.map}
                 provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
+                onPress={() => {
+                    if (openTargetProfileModal) {
+                        setOpenTargetProfileModal(false);
+                    }
+                }}
             >
                 {selflocation && selflocation.map((self_location, index) => (
                     <Marker
@@ -179,7 +184,11 @@ const Map = () => {
                 <Text style={styles.text}>{ myAccountName }</Text>
             </View>
             {openTargetProfileModal && (
-                <TargetProfile selfAccountName={myAccountName} targetAccountName={myAccountName}/>
+                <TargetProfile 
+                    selfAccountName={myAccountName} 
+                    targetAccountName={targetAccountName} 
+                    closeTargetProfileModal={() => setOpenTargetProfileModal(false)}
+                />
             )}
         </View>
     );

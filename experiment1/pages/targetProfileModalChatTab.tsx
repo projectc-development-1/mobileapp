@@ -10,7 +10,26 @@ interface MapProps {
 const Map: React.FC<MapProps> = ({ targetAccountName }) => {
     const { t } = useTranslation();
     return (
-        <View style={{ flex: 1, backgroundColor: '#ff4081' }} />
+        <View style={styles.container}>
+            <Text style={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }}>{t('Chat with')} {targetAccountName}</Text>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+                    <View style={{ flex: 1 }}>
+                        {/* Messages will be displayed here */}
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder={t('Type a message')}
+                            multiline
+                        />
+                        <TouchableOpacity style={styles.button}>
+                            <Text style={styles.buttonText}>{t('Send')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </TouchableWithoutFeedback>
+        </View>
     );
 };
 
@@ -23,8 +42,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0)',
         position: 'absolute',
-        top: 0,
-        left: 0,
+        zIndex: 2,
         width: '100%',
         height: '100%',
     },
