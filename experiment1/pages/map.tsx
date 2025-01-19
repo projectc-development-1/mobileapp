@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import RNExitApp from 'react-native-exit-app';
 import commonFunctions from "@/scripts/commonFunctions";
 import TargetProfile from "./targetProfileModal";
-
+ 
 interface AdvanceLocationObject extends LocationObject {
     accountName: string;
 }
