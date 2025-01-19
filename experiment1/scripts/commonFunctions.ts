@@ -1,25 +1,25 @@
 import * as SecureStore from 'expo-secure-store';
 import i18next from 'i18next';
+import { useRef, useState } from 'react';
 
 export default function CommonFunctions() {
+
+    let tempStoredValue = useRef<string | null>('');
 
     const setDataToDevice = async (key: string, value: string) => {
         try {
         await SecureStore.setItemAsync(key, value);
-        console.log('Data saved', key, value);
         } catch (e) {
-        console.error('Failed to save data', e);
+            console.error('Failed to save data', e);
         }
     };
 
     const getDataFromDevice = async (key: string) => {
         try {
-        const value = await SecureStore.getItemAsync(key);
-        if (value !== null) {
-            console.log('Data retrieved:', key, value);
-        }
+            tempStoredValue.current = (await SecureStore.getItemAsync(key));
+            return tempStoredValue.current;
         } catch (e) {
-        console.error('Failed to retrieve data', e);
+            console.error('Failed to retrieve data', e);
         }
     };
 

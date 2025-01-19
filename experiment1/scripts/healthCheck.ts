@@ -1,7 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import * as Location from 'expo-location';
 import commonFunctions from './commonFunctions';
-import locationCommunication from './locationCommunication';
 
 export default function HealthCheck() {
 
@@ -34,6 +33,8 @@ export default function HealthCheck() {
     //Check account name
     const checkLanguage = async () => {
         console.log('Checking language');
+        //await SecureStore.deleteItemAsync('language');
+        //await SecureStore.deleteItemAsync('accountName');
         const language = await SecureStore.getItemAsync('language');
         if (!language) {
             return false;

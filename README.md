@@ -19,6 +19,10 @@ expo install i18next react-i18next i18next-http-backend i18next-browser-language
 expo install @react-navigation/native @react-navigation/native-stack
 expo install react-native-screens react-native-safe-area-context
 expo install expo-updates
+expo install react-native-exit-app
+expo install expo-linking
+expo install react-native-pager-view
+
 
 
 
