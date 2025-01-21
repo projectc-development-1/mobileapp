@@ -2,37 +2,43 @@ import * as Location from "expo-location";
 import * as Device from "expo-device";
 import { LocationObject } from "expo-location";
 import React, { useRef, useState } from "react";
-import { View, StyleSheet, Platform, Alert, Text } from "react-native";
-import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE } from "react-native-maps";
+import { View, StyleSheet, Platform, Alert, Text, TouchableOpacity, Image, Keyboard } from "react-native";
+import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { useTranslation } from "react-i18next";
 import RNExitApp from 'react-native-exit-app';
 import commonFunctions from "@/scripts/commonFunctions";
-import TargetProfile from "./targetProfileModal";
- 
+import TargetAccountChatModal from "./targetAccountChatModal";
 interface AdvanceLocationObject extends LocationObject {
     accountName: string;
+    accountID: string;
 }
 
-const Map = () => {
+interface MapProps {
+    selfAccount: { accountName: string; accountID: string } | null;
+}
+
+const Map: React.FC<MapProps> = ({ selfAccount }) => {
     const { t } = useTranslation();
     const {
         getDataFromDevice
     } = commonFunctions();
 
-    let [myAccountName, setMyAccountName] = useState<string>('');
     let [selflocation, setSelflocation] = useState<LocationObject[]>([]);
     let subscription = useRef<Location.LocationSubscription | null>(null);
     let [otherlocation, setOtherlocation] = useState<AdvanceLocationObject[]>([]);
+    const [region, setRegion] = useState<Region>({
+        latitude: selflocation[0]?.coords.latitude || 0,
+        longitude: selflocation[0]?.coords.longitude || 0,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
+    });
     
     const stopUpdating = useRef(false);
+    const firstLoad = useRef(true);
     const nextUpdateTime = useRef(Date.now());
 
     if (stopUpdating.current==false && Date.now() >= nextUpdateTime.current){
         console.log(Date.now() , 'getSelfLocation() and getOtherLocation()');
-
-        const displayAccountName = async () => {
-            setMyAccountName(await getDataFromDevice("accountName") || '')
-        }
 
         const getSelfLocation = async () => {
             if (Platform.OS === 'android' && !Device.isDevice) {
@@ -62,6 +68,14 @@ const Map = () => {
                     (newLocation) => {
                         if (newLocation){
                             setSelflocation([newLocation]);
+                            if (firstLoad.current){
+                                setRegion({
+                                    latitude: newLocation.coords.latitude,
+                                    longitude: newLocation.coords.longitude,
+                                    latitudeDelta: 0.1,
+                                    longitudeDelta: 0.1,
+                                });
+                            }
                             return;
                         }
                     }
@@ -79,8 +93,8 @@ const Map = () => {
                     "data": {
                         "action": "INSERT",
                         "data": {
-                            "USERID": await getDataFromDevice("accountName"),
-                            "STATUS": 1,
+                            "accountName": await getDataFromDevice("accountName"),
+                            "accountID": await getDataFromDevice("accountid"),
                             "coords": {
                                 "latitude": (selflocation[0].coords.latitude).toString(), 
                                 "longitude": (selflocation[0].coords.longitude).toString(),
@@ -105,6 +119,22 @@ const Map = () => {
         }
 
         const getOtherLocation = async () => {
+            /*
+                dummyLocations.push(
+                {
+                    coords: {
+                        latitude: 22.370920562114932, 
+                        longitude: 114.08332432234569,
+                        altitude: 14.371987,
+                        accuracy: 13.387766,
+                        altitudeAccuracy: 30,
+                        heading: -1,
+                        speed: -1,
+                    },
+                    timestamp: Date.now(),
+                }
+            );
+            */
             const dummyLocations: any[] = [];
             getDataFromDevice("accountName")
             fetch('https://8jf471h04j.execute-api.ap-south-1.amazonaws.com/userLocationCommunication', {
@@ -122,14 +152,23 @@ const Map = () => {
             .then(response => response.json())
             .then(async data => {
                 for (let i=0; i<data.length; i++){
-                    if (data[i]['USERID']==await getDataFromDevice("accountName")){
+                    if (data[i]['accountID']==await getDataFromDevice("accountID")){
                         continue;
                     }
                     dummyLocations.push(
                         {   
-                            userAccountName: data[i]['USERID'],
-                            coords: data[i]['coords'],
-                            timestamp: data[i]['timestamp']
+                            accountName: data[i]['accountName'],
+                            accountID: data[i]['accountID'],
+                            coords: {
+                                latitude: parseFloat(data[i]['coords']['latitude']), 
+                                longitude: parseFloat(data[i]['coords']['longitude']),
+                                altitude: parseFloat(data[i]['coords']['altitude']),
+                                accuracy: parseFloat(data[i]['coords']['accuracy']),
+                                altitudeAccuracy: parseFloat(data[i]['coords']['altitudeAccuracy']),
+                                heading: parseFloat(data[i]['coords']['heading']),
+                                speed: parseFloat(data[i]['coords']['speed']),
+                            },
+                            timestamp: parseFloat(data[i]['timestamp'])
                         }
                     );
                 }
@@ -140,23 +179,27 @@ const Map = () => {
             });        
         }
 
-        displayAccountName();
         getSelfLocation();
         getOtherLocation();
+
+        firstLoad.current = false;
         nextUpdateTime.current = Date.now() + 10000;
     }
 
-    let [openTargetProfileModal, setOpenTargetProfileModal] = useState<boolean>(false);
-    let [targetAccountName, setTargetAccountName] = useState<string>('');
+    let [openToolBox, setOpenToolBox] = useState<boolean>(false);
+    let [openTargetAccountChatModal, setOpenTargetAccountChatModal] = useState<boolean>(false);
+    let [targetAccount, setTargetAccount] = useState<{ accountName: string; accountID: string } | null>(null);
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} >
             <MapView 
                 style={styles.map}
                 provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
+                region={Platform.OS === 'android' ? region : undefined}
                 onPress={() => {
-                    if (openTargetProfileModal) {
-                        setOpenTargetProfileModal(false);
+                    if (openToolBox){
+                        if (openTargetAccountChatModal){ setOpenTargetAccountChatModal(false); }
+                        else { setOpenToolBox(false); }
                     }
                 }}
             >
@@ -173,21 +216,33 @@ const Map = () => {
                         coordinate={{latitude: other_location.coords.latitude, longitude: other_location.coords.longitude}}
                         image={require('../assets/otherlocation100X100.png')}
                         onPress={() => {
-                            // Code to open the targetProfileModal.tsx
-                            setTargetAccountName(other_location.accountName);
-                            setOpenTargetProfileModal(true);
+                            setTargetAccount({ accountName: other_location.accountName, accountID: other_location.accountID });
+                            setOpenToolBox(true);
                         }}
                     />
                 ))}
             </MapView>
             <View style={styles.textContainer}>
-                <Text style={styles.text}>{ myAccountName }</Text>
+                <Text style={styles.text}>{ selfAccount?.accountName } ({ selfAccount?.accountID })</Text>
             </View>
-            {openTargetProfileModal && (
-                <TargetProfile 
-                    selfAccountName={myAccountName} 
-                    targetAccountName={targetAccountName} 
-                    closeTargetProfileModal={() => setOpenTargetProfileModal(false)}
+            {openToolBox && (
+                <View style={styles.toolListContainer}>
+                    <TouchableOpacity onPress={() => setOpenTargetAccountChatModal(!openTargetAccountChatModal)} style={{paddingVertical: 10}}>
+                        <Image source={require('../assets/chatIcon50X40.png')}/>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => console.log('Button 2 pressed')} style={{paddingVertical: 10}}>
+                        <Image source={require('../assets/informationIcon54X44.png')}/>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => console.log('Button 3 pressed')} style={{paddingVertical: 10}}>
+                        <Image source={require('../assets/notesIcon50X50.png')}/>
+                    </TouchableOpacity>
+                </View>
+            )}
+            {openTargetAccountChatModal && (
+                <TargetAccountChatModal 
+                    ws={new WebSocket('wss://o8e86zvvfl.execute-api.ap-south-1.amazonaws.com/development/')} 
+                    targetAccount={targetAccount} 
+                    selfAccount={selfAccount}
                 />
             )}
         </View>
@@ -213,16 +268,6 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
-    chatbox: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'white',
-        padding: 10,
-        borderTopWidth: 1,
-        borderColor: '#ccc',
-    },
     input: {
         height: 40,
         borderColor: 'gray',
@@ -241,5 +286,20 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 16,
         color: 'black',
+    },
+    toolListContainer: {
+        position: 'absolute',
+        width: '18%',
+        height: '28%',
+        left: '5%',
+        top: '65%',
+        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+        padding: 10,
+        borderRadius: 100,
+    },
+    toolListItem: {
+        fontSize: 16,
+        color: 'black',
+        marginBottom: 5,
     },
 });

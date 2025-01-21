@@ -1,10 +1,14 @@
 import { SafeAreaView } from 'react-native';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import healthCheck from '@/scripts/healthCheck';
 import SetNameModal from '@/pages/setNameModal';
 import SetLanguageModal from './setLanguageModal';
 import Map from './map';
 import commonFunctions from '@/scripts/commonFunctions';
+import { v4 as uuidv4 } from 'uuid';
+import * as SecureStore from 'expo-secure-store';
+import getRandomValues from 'get-random-values';
+import uuid from 'react-native-uuid';
 
 export default function App() {
 
@@ -26,8 +30,12 @@ export default function App() {
     };
 
     let [accountNameCheckInd, setAccountNameCheckInd] = useState<number>(0);
+    let selfAccount = useRef<{ accountName: string; accountID: string } | null>(null);
     const setAccountName = (name: string) => {
         setDataToDevice('accountName', name)
+        let accountid = uuid.v4();
+        setDataToDevice('accountid', accountid)
+        selfAccount.current = { accountName: name, accountID: accountid };
         onStart();
     };
 
@@ -41,6 +49,7 @@ export default function App() {
             let accountNameHealthCheck = await checkAccountName();
             setAccountNameCheckInd(accountNameHealthCheck===true ? 1 : 2);
             if(accountNameHealthCheck){
+                selfAccount.current = { accountName: (await SecureStore.getItemAsync('accountName')) || '', accountID: (await SecureStore.getItemAsync('accountid')) || '' };
                 setShowMap(true);
                 let locationAccessHealthCheck = checkLocationAccess();
                 if(await locationAccessHealthCheck){
@@ -60,7 +69,7 @@ export default function App() {
     return (
         <SafeAreaView style={{height: '100%'}}>
             {showMap && (
-                <Map/>
+                <Map selfAccount={selfAccount.current}/>
             )}
             {languageCheckInd==2 && (
                 <SetLanguageModal setLanguage={setLanguage} />

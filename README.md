@@ -22,8 +22,11 @@ expo install expo-updates
 expo install react-native-exit-app
 expo install expo-linking
 expo install react-native-pager-view
-
-
+expo install react-native-get-random-values
+expo install expo-random
+expo install get-random-values
+expo install secure-random
+expo install immutable
 
 
 Google API kys #################################
