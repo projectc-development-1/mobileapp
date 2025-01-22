@@ -3236,6 +3236,13 @@ expo-asset@~11.0.1:
     invariant "^2.2.4"
     md5-file "^3.2.3"
 
+expo-background-fetch@~13.0.4:
+  version "13.0.4"
+  resolved "https://registry.yarnpkg.com/expo-background-fetch/-/expo-background-fetch-13.0.4.tgz#7c20867a05f9e7f704971010f88adac87811ede3"
+  integrity sha512-4SloNKVgh+y4m2k7nsc5ixEcQJs8I+UIDiY5EXZ6ZABHbaA0x6frmKJVExaa9Eox6Xur+qDwZNGHCyBmYdHvnA==
+  dependencies:
+    expo-task-manager "~12.0.4"
+
 expo-constants@~17.0.0, expo-constants@~17.0.3, expo-constants@~17.0.4:
   version "17.0.4"
   resolved "https://registry.npmjs.org/expo-constants/-/expo-constants-17.0.4.tgz"
@@ -3369,6 +3376,13 @@ expo-task-manager@~12.0.3:
   integrity sha512-XNbDWPqBJw9kuWrYFhpcjRBbuxMUlgiFdEUHpm7VmMqGmm86UAZTO20zSGkM0U25yIcmQgsHiEbfV9B2S84dqA==
   dependencies:
     unimodules-app-loader "~5.0.0"
+
+expo-task-manager@~12.0.4:
+  version "12.0.4"
+  resolved "https://registry.yarnpkg.com/expo-task-manager/-/expo-task-manager-12.0.4.tgz#09b4e1e7a09049a58ea5df29dfe0560fff771bc4"
+  integrity sha512-iKnKubgdRQtdCSTB1oPz2h81ST9k8rrb2DtuO1cOpaixF+WFTPv8Vf4c/vT6FPNJV9k8cbw9HN2fC3ObpRgE/Q==
+  dependencies:
+    unimodules-app-loader "~5.0.1"
 
 expo-updates-interface@~1.0.0:
   version "1.0.0"
@@ -3946,7 +3960,7 @@ image-size@^1.0.2:
 
 immutable@^5.0.3:
   version "5.0.3"
-  resolved "https://registry.yarnpkg.com/immutable/-/immutable-5.0.3.tgz#aa037e2313ea7b5d400cd9298fa14e404c933db1"
+  resolved "https://registry.npmjs.org/immutable/-/immutable-5.0.3.tgz"
   integrity sha512-P8IdPQHq3lA1xVeBRi5VPqUm5HDgKnx0Ru51wZz5mjxHr5n3RWhjIpOFU7ybkUxfB+5IToy+OLaHYDBIWsv+uw==
 
 import-fresh@^2.0.0:
@@ -5614,6 +5628,16 @@ react-is@^18.0.0, react-is@^18.2.0:
   resolved "https://registry.npmjs.org/react-is/-/react-is-18.3.1.tgz"
   integrity sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==
 
+react-native-background-fetch@^4.2.7:
+  version "4.2.7"
+  resolved "https://registry.yarnpkg.com/react-native-background-fetch/-/react-native-background-fetch-4.2.7.tgz#2c13afa2454d0f01da2b798d0968acf4a6b34373"
+  integrity sha512-lR8MmQRjd7MV9KBSOsyxFRW7jeCjNOSvsT4PECwZv54iZZtxUkRjH8Kbr6SGiSPK1AmYM6TCdRBEt2I9FDZJEg==
+
+react-native-background-task@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/react-native-background-task/-/react-native-background-task-0.2.1.tgz#9d110ed14b245e0d8b9ec8114ce24b33ddda65de"
+  integrity sha512-t5NvHWiqdIRf+KRUbeYH0QYSF3TTTe67g9TuOy/KbfU0KWqK1igLbQB/vw1o8nXZrWWIzSl9mSTG+2V/57TRzw==
+
 react-native-exit-app@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/react-native-exit-app/-/react-native-exit-app-2.0.0.tgz"
@@ -5665,6 +5689,11 @@ react-native-screens@~4.4.0:
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
 
+react-native-simple-toast@^3.3.2:
+  version "3.3.2"
+  resolved "https://registry.npmjs.org/react-native-simple-toast/-/react-native-simple-toast-3.3.2.tgz"
+  integrity sha512-jtZa5VXLDc3Rr+1a2eYyviakxOXP8U9AFYp1VWlslApi0wkiNeyAQ4yLZbIY8nayrbHTUSkERiDzKoCsy9v7Dw==
+
 react-native-tab-view@^4.0.5:
   version "4.0.5"
   resolved "https://registry.npmjs.org/react-native-tab-view/-/react-native-tab-view-4.0.5.tgz"
@@ -5674,7 +5703,7 @@ react-native-tab-view@^4.0.5:
 
 react-native-uuid@^2.0.3:
   version "2.0.3"
-  resolved "https://registry.yarnpkg.com/react-native-uuid/-/react-native-uuid-2.0.3.tgz#f85f8a8d68e52e3f1c18ba0f02ec7776f9d4a0da"
+  resolved "https://registry.npmjs.org/react-native-uuid/-/react-native-uuid-2.0.3.tgz"
   integrity sha512-f/YfIS2f5UB+gut7t/9BKGSCYbRA9/74A5R1MDp+FLYsuS+OSWoiM/D8Jko6OJB6Jcu3v6ONuddvZKHdIGpeiw==
 
 react-native@0.76.5:
@@ -5978,7 +6007,7 @@ schema-utils@^4.0.1:
 
 secure-random@^1.1.2:
   version "1.1.2"
-  resolved "https://registry.yarnpkg.com/secure-random/-/secure-random-1.1.2.tgz#ed103b460a851632d420d46448b2a900a41e7f7c"
+  resolved "https://registry.npmjs.org/secure-random/-/secure-random-1.1.2.tgz"
   integrity sha512-H2bdSKERKdBV1SwoqYm6C0y+9EA94v6SUBOWO8kDndc4NoUih7Dv6Tsgma7zO1lv27wIvjlD0ZpMQk7um5dheQ==
 
 selfsigned@^2.4.1:
@@ -6635,6 +6664,11 @@ unimodules-app-loader@~5.0.0:
   version "5.0.0"
   resolved "https://registry.npmjs.org/unimodules-app-loader/-/unimodules-app-loader-5.0.0.tgz"
   integrity sha512-0Zc3u344NmlvyQBmcgnxHcQhrLeFV4hn80U6S4YwAfaexXCWmiHOzMe4+P+YhgHiRWb5lJgadr08hLbee3XTHg==
+
+unimodules-app-loader@~5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/unimodules-app-loader/-/unimodules-app-loader-5.0.1.tgz#4c5ac10b1043607441a171b8b6658b57a1e1e9f2"
+  integrity sha512-JI4dUMOovvLrZ1U/mrQrR73cxGH26H7NpfBxwE0hk59CBOyHO4YYpliI3hPSGgZzt+YEy2VZR6nrspSUXY8jyw==
 
 unique-filename@^3.0.0:
   version "3.0.0"

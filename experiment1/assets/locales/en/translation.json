@@ -5,7 +5,5 @@
     "location_access_warning_message_body": "Please grant location access to continue.",
     "location_status_warning_message_title": "Location status warning",
     "location_status_warning_message_body": "Please enable location service to continue.",
-    "Chat": "Chat",
-    "Information": "Let u know...",
-    "Notes": "Notes"
+    "Bad_network": "Wait..."
   }

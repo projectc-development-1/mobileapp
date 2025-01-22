@@ -20,7 +20,9 @@ interface MapProps {
 const Map: React.FC<MapProps> = ({ selfAccount }) => {
     const { t } = useTranslation();
     const {
-        getDataFromDevice
+        getDataFromDevice,
+        wsSend,
+        ws
     } = commonFunctions();
 
     let [selflocation, setSelflocation] = useState<LocationObject[]>([]);
@@ -35,10 +37,10 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
     
     const stopUpdating = useRef(false);
     const firstLoad = useRef(true);
+    const statusUpdated = useRef(false);
     const nextUpdateTime = useRef(Date.now());
 
     if (stopUpdating.current==false && Date.now() >= nextUpdateTime.current){
-        console.log(Date.now() , 'getSelfLocation() and getOtherLocation()');
 
         const getSelfLocation = async () => {
             if (Platform.OS === 'android' && !Device.isDevice) {
@@ -67,6 +69,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                     }, 
                     (newLocation) => {
                         if (newLocation){
+                            console.log(Date.now() , 'getSelfLocation()');
                             setSelflocation([newLocation]);
                             if (firstLoad.current){
                                 setRegion({
@@ -135,7 +138,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                 }
             );
             */
-            const dummyLocations: any[] = [];
+            
             getDataFromDevice("accountName")
             fetch('https://8jf471h04j.execute-api.ap-south-1.amazonaws.com/userLocationCommunication', {
                 method: 'POST',
@@ -151,8 +154,10 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
             })
             .then(response => response.json())
             .then(async data => {
+                console.log(Date.now() , 'getOtherLocation()');
+                const dummyLocations: any[] = [];
                 for (let i=0; i<data.length; i++){
-                    if (data[i]['accountID']==await getDataFromDevice("accountID")){
+                    if (data[i]['accountID']==selfAccount?.accountID){
                         continue;
                     }
                     dummyLocations.push(
@@ -179,8 +184,34 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
             });        
         }
 
+        const updateStatusToOnline = async () => { 
+            if(!statusUpdated.current){
+                wsSend(
+                    JSON.stringify({
+                        "action" : "communication",
+                        "data": {
+                            "from_account_id": selfAccount?.accountID,
+                            "from_account_name": selfAccount?.accountName,
+                            "to_account_id": targetAccount?.accountID,
+                            "to_account_name": targetAccount?.accountName,
+                            "command": "online",
+                            "timestamp": Date.now().toString()
+                        }
+                    })
+                );
+            }
+            ws.current.onmessage = e => {
+                console.log('Received data from server:', e.data);
+                let eInJson = JSON.parse(e.data);
+                if(eInJson.command == 'online' && eInJson.result == 'success'){
+                    statusUpdated.current = true;
+                }
+            }
+        }
+
         getSelfLocation();
         getOtherLocation();
+        updateStatusToOnline();
 
         firstLoad.current = false;
         nextUpdateTime.current = Date.now() + 10000;
@@ -240,7 +271,8 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
             )}
             {openTargetAccountChatModal && (
                 <TargetAccountChatModal 
-                    ws={new WebSocket('wss://o8e86zvvfl.execute-api.ap-south-1.amazonaws.com/development/')} 
+                    wsSend={wsSend}
+                    ws={ws.current} 
                     targetAccount={targetAccount} 
                     selfAccount={selfAccount}
                 />

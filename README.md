@@ -27,6 +27,8 @@ expo install expo-random
 expo install get-random-values
 expo install secure-random
 expo install immutable
+expo install react-native-simple-toast
+expo install expo-background-fetch
 
 
 Google API kys #################################

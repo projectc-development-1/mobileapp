@@ -5,7 +5,5 @@
     "location_access_warnning_message_body": "請授權位置存取以繼續。",
     "location_status_warning_message_title": "位置狀態警告",
     "location_status_warning_message_body": "請啟用位置服務以繼續。",
-    "Chat": "傾下計姐",
-    "Information": "佢想你知...",
-    "Notes": "筆記"
+    "Bad_network": "等等呀。。。"
   }

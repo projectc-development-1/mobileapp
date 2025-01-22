@@ -5,10 +5,9 @@ import SetNameModal from '@/pages/setNameModal';
 import SetLanguageModal from './setLanguageModal';
 import Map from './map';
 import commonFunctions from '@/scripts/commonFunctions';
-import { v4 as uuidv4 } from 'uuid';
 import * as SecureStore from 'expo-secure-store';
-import getRandomValues from 'get-random-values';
 import uuid from 'react-native-uuid';
+import { registerBackgroundFetchAsync } from '@/scripts/backgroundTask';
 
 export default function App() {
 
@@ -55,6 +54,7 @@ export default function App() {
                 if(await locationAccessHealthCheck){
                     let locationStatusHealthCheck = checkLocationStatus();
                     if(await locationStatusHealthCheck){
+                        registerBackgroundFetchAsync();
                         onStartCheckingDone = true;
                     }
                 }
