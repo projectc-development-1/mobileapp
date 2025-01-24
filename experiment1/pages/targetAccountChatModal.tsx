@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { StyleSheet, TouchableWithoutFeedback, View, Keyboard, TouchableOpacity, Text, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import uuid from 'react-native-uuid';
 import { TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-simple-toast';
@@ -34,42 +35,52 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
     const scrollViewRef = useRef<ScrollView>(null);
     
     if(loadHistoryMessages.current){
-        if(ws.readyState == 1){
-            setSendButtonDisabled(true);
-            console.log('loading history messages');
-            wsSend(
-                JSON.stringify({
-                    "action" : "communication",
-                    "data": {
-                        "from_account_id": selfAccount?.accountID,
-                        "from_account_name": selfAccount?.accountName,
-                        "to_account_id": targetAccount?.accountID,
-                        "to_account_name": targetAccount?.accountName,
-                        "command": "loadHistoryMessages",
-                        "timestamp": Date.now().toString()
-                    }
-                })
-            )
-            loadHistoryMessages.current = false
-        }
-    } 
-
-    const sendMsg = () => {
+        setSendButtonDisabled(true);
+        console.log('loading history messages');
         wsSend(
             JSON.stringify({
                 "action" : "communication",
                 "data": {
                     "from_account_id": selfAccount?.accountID,
-                    "from_account_name": selfAccount?.accountName,
                     "to_account_id": targetAccount?.accountID,
-                    "to_account_name": targetAccount?.accountName,
-                    "message": tempInputMessage,
+                    "command": "loadHistoryMessages",
                     "timestamp": Date.now().toString()
                 }
             })
         )
+        loadHistoryMessages.current = false
+    } 
+
+    const sendMsg = () => {
+        let tempSendMsg = {
+            "action" : "communication",
+            "data": {
+                "message_id": uuid.v4(),
+                "from_account_id": selfAccount?.accountID,
+                "from_account_name": selfAccount?.accountName,
+                "to_account_id": targetAccount?.accountID,
+                "to_account_name": targetAccount?.accountName,
+                "message": tempInputMessage,
+                "timestamp": Date.now().toString()
+            }
+        }
+        wsSend( JSON.stringify(tempSendMsg) )
         setTempInputMessage('');
         setTextInputWidth(90);
+        setMessages(prevMessages => [
+            ...prevMessages,
+            {
+                messageID: tempSendMsg.data.message_id || '',
+                from_account_id: tempSendMsg.data.from_account_id || '',
+                from_account_name: tempSendMsg.data.from_account_name || '',
+                to_account_id: tempSendMsg.data.to_account_id || '',
+                to_account_name: tempSendMsg.data.to_account_name || '',
+                message: tempSendMsg.data.message || '',
+                timestamp: parseInt(tempSendMsg.data.timestamp),
+                read: true
+            }
+        ]);
+        scrollViewRef.current?.scrollToEnd({ animated: true });
     };
 
     ws.onmessage = e => {
@@ -77,6 +88,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         let eInJson = JSON.parse(e.data);
         if(eInJson.command == 'loadHistoryMessages'){
             console.log('received history messages');
+            let unread_message_ids_timestamp = [];
             for(let i=0; i<eInJson.result.length; i++){
                 setMessages(prevMessages => [
                     ...prevMessages,
@@ -91,26 +103,60 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                         read: Object(eInJson.result[i].read).BOOL
                     }
                 ]);
+                if(Object(eInJson.result[i].read).BOOL == false && Object(eInJson.result[i].to_account_id).S == selfAccount?.accountID){
+                    unread_message_ids_timestamp.push({
+                        messageID: Object(eInJson.result[i].messageID).S,
+                        timestamp: parseInt(Object(eInJson.result[i].timestamp).N)
+                    });
+                }
+            }
+            if(unread_message_ids_timestamp.length > 0){
+                wsSend(
+                    JSON.stringify({
+                        "action" : "communication",
+                        "data": {
+                            "message_ids_timestamps": unread_message_ids_timestamp,
+                            "from_account_id": selfAccount?.accountID,
+                            "to_account_id": targetAccount?.accountID,
+                            "command": "readAll"
+                        }
+                    })
+                )
             }
             setMessages(prevMessages => [...prevMessages].sort((a, b) => a.timestamp - b.timestamp));
             setSendButtonDisabled(false);
-            scrollViewRef.current?.scrollToEnd({ animated: true });
+            setTimeout(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, 300);
         }
         else if (eInJson.messageID) {
-            setMessages(prevMessages => [
-                ...prevMessages,
-                {
-                    messageID: eInJson.messageID,
-                    from_account_id: eInJson.from_account_id,
-                    from_account_name: eInJson.from_account_name,
-                    to_account_id: eInJson.to_account_id,
-                    to_account_name: eInJson.to_account_name,
-                    message: eInJson.message,
-                    timestamp: parseInt(eInJson.timestamp),
-                    read: eInJson.read
-                }
-            ]);
-            scrollViewRef.current?.scrollToEnd({ animated: true });
+            if(eInJson.from_account_id != selfAccount?.accountID && eInJson.from_account_id == targetAccount?.accountID){
+                setMessages(prevMessages => [
+                    ...prevMessages,
+                    {
+                        messageID: eInJson.messageID,
+                        from_account_id: eInJson.from_account_id,
+                        from_account_name: eInJson.from_account_name,
+                        to_account_id: eInJson.to_account_id,
+                        to_account_name: eInJson.to_account_name,
+                        message: eInJson.message,
+                        timestamp: parseInt(eInJson.timestamp),
+                        read: eInJson.read
+                    }
+                ]);
+                setMessages(prevMessages => [...prevMessages].sort((a, b) => a.timestamp - b.timestamp));
+                wsSend(
+                    JSON.stringify({
+                        "action" : "communication",
+                        "data": {
+                            "message_id": eInJson.messageID,
+                            "from_account_id": selfAccount?.accountID,
+                            "to_account_id": targetAccount?.accountID,
+                            "timestamp": parseInt(eInJson.timestamp),
+                            "command": "read"
+                        }
+                    })
+                )
+            }
+            setTimeout(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, 300);
         }
     };
 
@@ -147,15 +193,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                         <ScrollView ref={scrollViewRef}>
                             {messages && messages.map((msg, index) => (
-                                <View key={msg.messageID } 
-                                    style={[
-                                        styles.messageContainer, 
-                                        { 
-                                            alignSelf: msg.from_account_id !== selfAccount?.accountID ? 'flex-start' : 'flex-end',
-                                            backgroundColor: msg.from_account_id !== selfAccount?.accountID ? '#ff9a8f' : '#ffcf8f'
-                                        }
-                                    ]}
-                                >
+                                <View key={msg.messageID } style={ msg.from_account_id !== selfAccount?.accountID ? styles.messageContainerForTargetAccount : styles.messageContainerForSelfAccount }>
                                     <Text style={styles.messageTimestamp}>{new Date(msg.timestamp).toLocaleString()}</Text>
                                     <Text style={styles.messageText}>{msg.message}</Text>
                                 </View>
@@ -243,11 +281,19 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: 'rgb(51, 51, 51)',
     },
-    messageContainer: {
+    messageContainerForTargetAccount: {
         padding: 10,
         marginVertical: 5,
-        backgroundColor: 'rgb(241, 241, 241)',
+        backgroundColor: 'rgb(255, 154, 143)',
         borderRadius: 10,
+        alignSelf: 'flex-start',
+    },
+    messageContainerForSelfAccount: {
+        padding: 10,
+        marginVertical: 5,
+        backgroundColor: 'rgb(255, 207, 143)',
+        borderRadius: 10,
+        alignSelf: 'flex-end',
     },
     messageTimestamp: {
         fontSize: 10,

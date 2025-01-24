@@ -43,3 +43,19 @@ npx expo run:ios
 npx expo run:ios --device
 npx expo run:android
 npx expo run:android --device
+
+eas build --platform android
+eas build -p android --profile preview
+
+Build projct #################################
+https://docs.expo.dev/build/setup/
+
+Apple developer account
+https://developer.apple.com/account
+
+Google Service Account
+https://console.cloud.google.com/iam-admin/serviceaccounts?authuser=4&inv=1&invt=Abnl4g&project=expermient1
+
+Reference how to build apk locally
+https://docs.expo.dev/build-reference/apk/
+https://louis383.medium.com/%E6%89%8B%E5%8B%95%E5%AE%89%E8%A3%9D-aab-android-app-bundle-%E6%AA%94%E6%A1%88-b2a49b75b9c

@@ -39,6 +39,14 @@
       "expo-secure-store",
       "expo-router",
       "react-native-background-fetch"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "9b4a37bb-b744-4d22-9bc4-ebcfbd82baa4"
+      }
+    }
   }
 }

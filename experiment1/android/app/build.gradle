@@ -81,7 +81,10 @@ def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInRelea
 def jscFlavor = 'org.webkit:android-jsc:+'
 
 android {
-    ndkVersion rootProject.ext.ndkVersion
+// @generated begin react-native-background-fetch-project - expo prebuild (DO NOT MODIFY) sync-56d2d70cbc3f26369dd5e711d0ab87bf3c0aebb3
+Project background_fetch = project(':react-native-background-fetch')
+// @generated end react-native-background-fetch-project
+    ndkVersion "27.1.12297006"
 
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
@@ -123,6 +126,9 @@ android {
     }
     androidResources {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
+    }
+    lint {
+        baseline = file("lint-baseline.xml")
     }
 }
 

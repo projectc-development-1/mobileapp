@@ -3,6 +3,7 @@ import * as Device from "expo-device";
 import { LocationObject } from "expo-location";
 import React, { useRef, useState } from "react";
 import { View, StyleSheet, Platform, Alert, Text, TouchableOpacity, Image, Keyboard } from "react-native";
+import { Map as ImmutableMap, setIn } from 'immutable';
 import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { useTranslation } from "react-i18next";
 import RNExitApp from 'react-native-exit-app';
@@ -11,6 +12,7 @@ import TargetAccountChatModal from "./targetAccountChatModal";
 interface AdvanceLocationObject extends LocationObject {
     accountName: string;
     accountID: string;
+    unreadMsgMapAmount: number;
 }
 
 interface MapProps {
@@ -25,28 +27,24 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
         ws
     } = commonFunctions();
 
-    let [selflocation, setSelflocation] = useState<LocationObject[]>([]);
+    let selflocation = useRef<LocationObject[]>([]);
     let subscription = useRef<Location.LocationSubscription | null>(null);
     let [otherlocation, setOtherlocation] = useState<AdvanceLocationObject[]>([]);
+    let unreadMsgMap = useRef(ImmutableMap<string, number>());
     const [region, setRegion] = useState<Region>({
-        latitude: selflocation[0]?.coords.latitude || 0,
-        longitude: selflocation[0]?.coords.longitude || 0,
+        latitude: selflocation.current[0]?.coords.latitude || 0,
+        longitude: selflocation.current[0]?.coords.longitude || 0,
         latitudeDelta: 0.1,
         longitudeDelta: 0.1,
     });
     
     const stopUpdating = useRef(false);
     const firstLoad = useRef(true);
-    const statusUpdated = useRef(false);
     const nextUpdateTime = useRef(Date.now());
-
+    
     if (stopUpdating.current==false && Date.now() >= nextUpdateTime.current){
 
-        const getSelfLocation = async () => {
-            if (Platform.OS === 'android' && !Device.isDevice) {
-                console.log('Oops, this will not work on Snack in an Android Emulator. Try it on your device!');
-            }
-
+        const checkLocationAccess = async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 console.log('Permission to access location was denied');
@@ -61,7 +59,9 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                 );
                 stopUpdating.current = true;
             }
-            
+        }
+
+        const getSelfLocation = async () => {
             if (subscription.current==null){
                 subscription.current = await Location.watchPositionAsync(
                     {
@@ -70,8 +70,8 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                     (newLocation) => {
                         if (newLocation){
                             console.log(Date.now() , 'getSelfLocation()');
-                            setSelflocation([newLocation]);
-                            if (firstLoad.current){
+                            selflocation.current = ([newLocation]);
+                            if (firstLoad.current || region.latitude==0){
                                 setRegion({
                                     latitude: newLocation.coords.latitude,
                                     longitude: newLocation.coords.longitude,
@@ -84,7 +84,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                     }
                 );
             }
-
+            
             //insert to database
             fetch('https://8jf471h04j.execute-api.ap-south-1.amazonaws.com/userLocationCommunication', {
                 method: 'POST',
@@ -99,26 +99,26 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                             "accountName": await getDataFromDevice("accountName"),
                             "accountID": await getDataFromDevice("accountid"),
                             "coords": {
-                                "latitude": (selflocation[0].coords.latitude).toString(), 
-                                "longitude": (selflocation[0].coords.longitude).toString(),
-                                "altitude": selflocation[0]?.coords.altitude?.toString() || '',
-                                "accuracy": selflocation[0]?.coords.accuracy?.toString() || '',
-                                "altitudeAccuracy": selflocation[0]?.coords.altitudeAccuracy?.toString() || '',
-                                "heading": selflocation[0]?.coords.heading?.toString() || '',
-                                "speed": selflocation[0]?.coords.speed?.toString() || ''
+                                "latitude": (selflocation.current[0].coords.latitude).toString(), 
+                                "longitude": (selflocation.current[0].coords.longitude).toString(),
+                                "altitude": selflocation.current[0]?.coords.altitude?.toString() || '',
+                                "accuracy": selflocation.current[0]?.coords.accuracy?.toString() || '',
+                                "altitudeAccuracy": selflocation.current[0]?.coords.altitudeAccuracy?.toString() || '',
+                                "heading": selflocation.current[0]?.coords.heading?.toString() || '',
+                                "speed": selflocation.current[0]?.coords.speed?.toString() || ''
                             },
-                            "timestamp": selflocation[0].timestamp.toString()
+                            "timestamp": selflocation.current[0].timestamp.toString()
                         }
                     }
                 })
             })
             .then(response => response.json())
-            .then(data => {
+            .then(async data => {
                 console.log('Success:', data);
             })
             .catch((error) => {
                 console.error('Error:', error);
-            });       
+            });
         }
 
         const getOtherLocation = async () => {
@@ -139,7 +139,6 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
             );
             */
             
-            getDataFromDevice("accountName")
             fetch('https://8jf471h04j.execute-api.ap-south-1.amazonaws.com/userLocationCommunication', {
                 method: 'POST',
                 headers: {
@@ -164,6 +163,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                         {   
                             accountName: data[i]['accountName'],
                             accountID: data[i]['accountID'],
+                            unreadMsgMapAmount: unreadMsgMap.current.get(data[i]['accountID']),
                             coords: {
                                 latitude: parseFloat(data[i]['coords']['latitude']), 
                                 longitude: parseFloat(data[i]['coords']['longitude']),
@@ -185,44 +185,56 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
         }
 
         const updateStatusToOnline = async () => { 
-            if(!statusUpdated.current){
-                wsSend(
-                    JSON.stringify({
-                        "action" : "communication",
-                        "data": {
-                            "from_account_id": selfAccount?.accountID,
-                            "from_account_name": selfAccount?.accountName,
-                            "to_account_id": targetAccount?.accountID,
-                            "to_account_name": targetAccount?.accountName,
-                            "command": "online",
-                            "timestamp": Date.now().toString()
-                        }
-                    })
-                );
-            }
-            ws.current.onmessage = e => {
-                console.log('Received data from server:', e.data);
-                let eInJson = JSON.parse(e.data);
-                if(eInJson.command == 'online' && eInJson.result == 'success'){
-                    statusUpdated.current = true;
-                }
-            }
+            wsSend(
+                JSON.stringify({
+                    "action" : "communication",
+                    "data": {
+                        "account_id": selfAccount?.accountID,
+                        "account_name": selfAccount?.accountName,
+                        "command": "onlineAndSyncMsg",
+                        "timestamp": Date.now().toString()
+                    }
+                })
+            );
         }
 
-        getSelfLocation();
-        getOtherLocation();
-        updateStatusToOnline();
-
+        if(Platform.OS === 'android'){
+            if(firstLoad.current){
+                setInterval(() => {
+                    checkLocationAccess();
+                    getSelfLocation();
+                    getOtherLocation();
+                    updateStatusToOnline();
+                }, 10000);
+            }
+        }else{
+            checkLocationAccess();
+            getSelfLocation();
+            getOtherLocation();
+            updateStatusToOnline();
+        }
         firstLoad.current = false;
-        nextUpdateTime.current = Date.now() + 10000;
+        nextUpdateTime.current = Date.now() + 5000;
     }
+
+    ws.current.onmessage = e => {
+        // a message was received
+        let eInJson = JSON.parse(e.data);
+        if(eInJson.command == 'onlineAndSyncMsg'){
+            console.log(eInJson);
+            unreadMsgMap.current = ImmutableMap<string, number>();
+            for(let i=0; i<eInJson.result.length; i++){
+                unreadMsgMap.current = unreadMsgMap.current.set(eInJson.result[i].from_account_id, parseInt(eInJson.result[i].unreadMsgAmount));
+            }
+        }
+    };
 
     let [openToolBox, setOpenToolBox] = useState<boolean>(false);
     let [openTargetAccountChatModal, setOpenTargetAccountChatModal] = useState<boolean>(false);
     let [targetAccount, setTargetAccount] = useState<{ accountName: string; accountID: string } | null>(null);
 
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} >
+        <View style={styles.container}>
             <MapView 
                 style={styles.map}
                 provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
@@ -234,28 +246,29 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                     }
                 }}
             >
-                {selflocation && selflocation.map((self_location, index) => (
+                {selflocation && selflocation.current.map((self_location, index) => (
                     <Marker
                         key={index}
                         coordinate={{latitude: self_location.coords.latitude, longitude: self_location.coords.longitude}}
-                        image={require('../assets/selflocation100X100.png')}
-                    />
+                    >
+                        <Image source={require('../assets/selflocation30X30.png')}/>
+                    </Marker>
                 ))}
                 {otherlocation && otherlocation.map((other_location, index) => (
                     <Marker
                         key={index}
                         coordinate={{latitude: other_location.coords.latitude, longitude: other_location.coords.longitude}}
-                        image={require('../assets/otherlocation100X100.png')}
                         onPress={() => {
+                            console.log('Marker pressed');
                             setTargetAccount({ accountName: other_location.accountName, accountID: other_location.accountID });
                             setOpenToolBox(true);
                         }}
-                    />
+                    >
+                        <Image source={require('../assets/otherlocation30X30.png')} style={{'display': unreadMsgMap.current.get(other_location.accountID)==undefined?'flex':'none'}} />
+                        <Image source={require('../assets/otherAccountWithUnreadMsgWIthUnreadMsgs40X40.gif')} style={{display: unreadMsgMap.current.get(other_location.accountID)==undefined?'none':'flex'}} />
+                    </Marker>
                 ))}
             </MapView>
-            <View style={styles.textContainer}>
-                <Text style={styles.text}>{ selfAccount?.accountName } ({ selfAccount?.accountID })</Text>
-            </View>
             {openToolBox && (
                 <View style={styles.toolListContainer}>
                     <TouchableOpacity onPress={() => setOpenTargetAccountChatModal(!openTargetAccountChatModal)} style={{paddingVertical: 10}}>
@@ -285,11 +298,9 @@ export default Map;
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
-        backgroundColor: '#ecf0f1',
+        position: 'absolute',
+        width: '120%',
+        height: '120%',
     },
     paragraph: {
         fontSize: 18,

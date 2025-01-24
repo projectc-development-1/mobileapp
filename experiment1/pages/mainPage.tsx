@@ -4,6 +4,7 @@ import healthCheck from '@/scripts/healthCheck';
 import SetNameModal from '@/pages/setNameModal';
 import SetLanguageModal from './setLanguageModal';
 import Map from './map';
+import Account from './account';
 import commonFunctions from '@/scripts/commonFunctions';
 import * as SecureStore from 'expo-secure-store';
 import uuid from 'react-native-uuid';
@@ -65,9 +66,10 @@ export default function App() {
     if(!onStartCheckingDone){
         onStart();
     }
-
+    
     return (
         <SafeAreaView style={{height: '100%'}}>
+            <Account selfAccount={selfAccount.current} />
             {showMap && (
                 <Map selfAccount={selfAccount.current}/>
             )}
