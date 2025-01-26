@@ -1,20 +1,19 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { View, StyleSheet, Text, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, StyleSheet, Pressable } from 'react-native';
+import { Button } from '@react-navigation/elements';
+import { Link } from 'expo-router';
+import React from 'react';
 
 interface MapProps {
     selfAccount: { accountName: string; accountID: string } | null;
 }
 
 const Map: React.FC<MapProps> = ({ selfAccount }) => {
-    const { t } = useTranslation();
 
     return (
         <View style={styles.container}>
-            <Image style={styles.icon} source={require('../assets/notesIcon50X50.png')} />
-            <View style={styles.textContainer}>
-                <Text style={styles.text}>{ selfAccount?.accountName } ({ selfAccount?.accountID })</Text>
-            </View>
+            <Link href="takePhotoForProfile" >
+                <Image style={styles.icon} source={require('../../assets/notesIcon50X50.png')} />
+            </Link>
         </View>
     )
 }
@@ -27,10 +26,8 @@ const styles = StyleSheet.create({
     },
     icon: {
         left: '5%',
-        top: '50%',
     },
     textContainer: {
-        position: 'absolute',
         backgroundColor: 'rgba(255, 255, 255, 0.77)',
         width: '75%',
         left: '20%',
@@ -39,5 +36,5 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 16,
         color: 'black',
-    },
+    }
 });

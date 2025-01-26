@@ -1,9 +1,9 @@
 import { SafeAreaView } from 'react-native';
 import React, { useRef, useState } from 'react';
 import healthCheck from '@/scripts/healthCheck';
-import SetNameModal from '@/pages/setNameModal';
+import SetNameModal from '@/app/pages/setNameModal';
 import SetLanguageModal from './setLanguageModal';
-import Map from './map';
+import Map from '@/app/pages/map';
 import Account from './account';
 import commonFunctions from '@/scripts/commonFunctions';
 import * as SecureStore from 'expo-secure-store';
@@ -69,7 +69,6 @@ export default function App() {
     
     return (
         <SafeAreaView style={{height: '100%'}}>
-            <Account selfAccount={selfAccount.current} />
             {showMap && (
                 <Map selfAccount={selfAccount.current}/>
             )}
@@ -79,6 +78,7 @@ export default function App() {
             {accountNameCheckInd==2 && (
                 <SetNameModal setAccountName={setAccountName}/>
             )}
+            <Account selfAccount={selfAccount.current} />
         </SafeAreaView> 
     );
 }

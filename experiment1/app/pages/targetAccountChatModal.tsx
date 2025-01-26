@@ -182,7 +182,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                     {targetAccount && (
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
                             <Image
-                                source={require('../assets/icon.png')}
+                                source={require('../../assets/icon.png')}
                                 style={{ width: 40, height: 40, borderRadius: 20, marginRight: 10 }}
                             />
                             <ScrollView horizontal={true} style={styles.accountNameContainer} >
@@ -239,10 +239,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         position: 'absolute',
         zIndex: 0,
-        width: '70%',
-        height: '90%',
+        width: '55%',
+        height: '80%',
         borderRadius: 30,
-        top: '3%',
+        top: '8%',
         left: '25%',
     },
     input: {
@@ -274,8 +274,7 @@ const styles = StyleSheet.create({
         padding: 10,
         marginVertical: 5,
         backgroundColor: 'rgb(255, 255, 255)',
-        borderRadius: 10,
-        width: '70%',
+        borderRadius: 25,
     },
     accountNameText: {
         fontSize: 16,

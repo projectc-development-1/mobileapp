@@ -29,6 +29,8 @@ expo install secure-random
 expo install immutable
 expo install react-native-simple-toast
 expo install expo-background-fetch
+expo install expo-camera
+expo install @react-navigation/stack
 
 
 Google API kys #################################

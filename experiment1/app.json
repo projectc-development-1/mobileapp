@@ -38,7 +38,15 @@
     "plugins": [
       "expo-secure-store",
       "expo-router",
-      "react-native-background-fetch"
+      "react-native-background-fetch",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ]
     ],
     "extra": {
       "router": {

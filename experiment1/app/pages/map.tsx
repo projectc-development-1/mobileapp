@@ -8,7 +8,7 @@ import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Region } from "reac
 import { useTranslation } from "react-i18next";
 import RNExitApp from 'react-native-exit-app';
 import commonFunctions from "@/scripts/commonFunctions";
-import TargetAccountChatModal from "./targetAccountChatModal";
+import TargetAccountChatModal from "@/app/pages/targetAccountChatModal";
 interface AdvanceLocationObject extends LocationObject {
     accountName: string;
     accountID: string;
@@ -251,7 +251,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                         key={index}
                         coordinate={{latitude: self_location.coords.latitude, longitude: self_location.coords.longitude}}
                     >
-                        <Image source={require('../assets/selflocation30X30.png')}/>
+                        <Image source={require('../../assets/selflocation30X30.png')}/>
                     </Marker>
                 ))}
                 {otherlocation && otherlocation.map((other_location, index) => (
@@ -264,21 +264,21 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                             setOpenToolBox(true);
                         }}
                     >
-                        <Image source={require('../assets/otherlocation30X30.png')} style={{'display': unreadMsgMap.current.get(other_location.accountID)==undefined?'flex':'none'}} />
-                        <Image source={require('../assets/otherAccountWithUnreadMsgWIthUnreadMsgs40X40.gif')} style={{display: unreadMsgMap.current.get(other_location.accountID)==undefined?'none':'flex'}} />
+                        <Image source={require('../../assets/otherlocation30X30.png')} style={{'display': unreadMsgMap.current.get(other_location.accountID)==undefined?'flex':'none'}} />
+                        <Image source={require('../../assets/otherAccountWithUnreadMsgWIthUnreadMsgs40X40.gif')} style={{display: unreadMsgMap.current.get(other_location.accountID)==undefined?'none':'flex'}} />
                     </Marker>
                 ))}
             </MapView>
             {openToolBox && (
                 <View style={styles.toolListContainer}>
                     <TouchableOpacity onPress={() => setOpenTargetAccountChatModal(!openTargetAccountChatModal)} style={{paddingVertical: 10}}>
-                        <Image source={require('../assets/chatIcon50X40.png')}/>
+                        <Image source={require('../../assets/chatIcon50X40.png')}/>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => console.log('Button 2 pressed')} style={{paddingVertical: 10}}>
-                        <Image source={require('../assets/informationIcon54X44.png')}/>
+                        <Image source={require('../../assets/informationIcon54X44.png')}/>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => console.log('Button 3 pressed')} style={{paddingVertical: 10}}>
-                        <Image source={require('../assets/notesIcon50X50.png')}/>
+                        <Image source={require('../../assets/notesIcon50X50.png')}/>
                     </TouchableOpacity>
                 </View>
             )}
@@ -332,8 +332,8 @@ const styles = StyleSheet.create({
     },
     toolListContainer: {
         position: 'absolute',
-        width: '18%',
-        height: '28%',
+        width: '15%',
+        height: '23%',
         left: '5%',
         top: '65%',
         backgroundColor: 'rgba(255, 255, 255, 0.6)',
