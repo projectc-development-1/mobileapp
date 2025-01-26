@@ -1,0 +1,9 @@
+{
+    "enter_your_name": "點稱呼呀？",
+    "ok": "OK",
+    "location_access_warnning_message_title": "位置存取警告",
+    "location_access_warnning_message_body": "請授權位置存取以繼續。",
+    "location_status_warning_message_title": "位置狀態警告",
+    "location_status_warning_message_body": "請啟用位置服務以繼續。",
+    "Bad_network": "等等呀。。。"
+  }

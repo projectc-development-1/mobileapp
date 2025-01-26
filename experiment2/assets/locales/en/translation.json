@@ -1,0 +1,9 @@
+{
+    "enter_your_name": "What's your name ?",
+    "ok": "OK",
+    "location_access_warning_message_title": "Location Access Warning",
+    "location_access_warning_message_body": "Please grant location access to continue.",
+    "location_status_warning_message_title": "Location status warning",
+    "location_status_warning_message_body": "Please enable location service to continue.",
+    "Bad_network": "Wait..."
+  }
