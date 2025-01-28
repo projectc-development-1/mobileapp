@@ -33,9 +33,9 @@ export default function HealthCheck() {
     //Check account name
     const checkLanguage = async () => {
         console.log('Checking language');
-        //await SecureStore.deleteItemAsync('language');
-        //await SecureStore.deleteItemAsync('accountName');
-        //await SecureStore.deleteItemAsync('accountid');
+        await SecureStore.deleteItemAsync('language');
+        await SecureStore.deleteItemAsync('accountName');
+        await SecureStore.deleteItemAsync('accountid');
         const language = await SecureStore.getItemAsync('language');
         if (!language) {
             return false;

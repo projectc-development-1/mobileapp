@@ -1,13 +1,14 @@
 import { View, Image, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
+
+let [takeProfilePhoto, setTakeProfilePhoto] = useState(false);
 
 interface MapProps {
     selfAccount: { accountName: string; accountID: string } | null;
 }
 
 const Map: React.FC<MapProps> = ({ selfAccount }) => {
-
     return (
         <View style={styles.container}>
             <Link style={styles.link} href="/takePhotoForProfile" >
@@ -37,6 +38,6 @@ const styles = StyleSheet.create({
     },
     text: {
         fontSize: 16,
-        color: 'black',
+        color: 'rgb(0, 0, 0)',
     }
 });

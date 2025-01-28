@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     input: {
         paddingHorizontal: 10,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: 'rgb(204, 204, 204)',
         borderRadius: 10,
         backgroundColor: 'rgb(255, 255, 255)',
         marginRight: 10,
@@ -258,14 +258,14 @@ const styles = StyleSheet.create({
         width: '20%',
         paddingVertical: 10,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: 'rgb(204, 204, 204)',
         borderRadius: 25,
-        backgroundColor: '#e74c3c',
+        backgroundColor: 'rgb(231, 76, 60)',
         alignItems: 'center',
         opacity: 1,
     },
     buttonText: {
-        color: '#000',
+        color: 'rgb(0, 0, 0)',
         fontFamily: 'Math-Italic'
     },
     accountNameContainer: {

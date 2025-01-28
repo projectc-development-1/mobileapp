@@ -59,22 +59,22 @@ const styles = StyleSheet.create({
         width: '80%',
         padding: 10,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: 'rgb(204, 204, 204)',
         borderRadius: 25,
-        backgroundColor: '#fff',
+        backgroundColor: 'rgb(255, 255, 255)',
         marginBottom: 20,
     },
     button: {
         width: '80%',
         padding: 10,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: 'rgb(204, 204, 204)',
         borderRadius: 25,
-        backgroundColor: '#e74c3c',
+        backgroundColor: 'rgb(231, 77, 60)',
         alignItems: 'center',
     },
     buttonText: {
-        color: '#000',
+        color: 'rgb(0, 0, 0)',
         fontFamily: 'Math-Italic'
     },
 });

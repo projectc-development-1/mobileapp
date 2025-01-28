@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     paragraph: {
         fontSize: 18,
         textAlign: 'center',
-        color: 'white',
+        color: 'rgb(255, 255, 255)',
     },
     map: {
         width: '100%',
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     },
     input: {
         height: 40,
-        borderColor: 'gray',
+        borderColor: 'rgb(155, 155, 155)',
         borderWidth: 1,
         marginBottom: 10,
         paddingHorizontal: 10,
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     },
     text: {
         fontSize: 16,
-        color: 'black',
+        color: 'rgb(0, 0, 0)',
     },
     toolListContainer: {
         position: 'absolute',
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     },
     toolListItem: {
         fontSize: 16,
-        color: 'black',
+        color: 'rgb(0, 0, 0)',
         marginBottom: 5,
     },
 });

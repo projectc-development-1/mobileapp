@@ -49,28 +49,28 @@ const styles = StyleSheet.create({
         width: '80%',
         padding: 10,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: 'rgb(204, 204, 204)',
         borderRadius: 25,
-        backgroundColor: '#cb4335',
+        backgroundColor: 'rgb(203, 68, 53)',
         alignItems: 'center',
         marginBottom: 20,
     },
     chinesebuttonText: {
-        color: '#000',
+        color: 'rgba(0, 0, 0, 0)',
         fontFamily: 'Math-Italic'
     },
     englishbutton: {
         width: '80%',
         padding: 10,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: 'rgb(204, 204, 204)',
         borderRadius: 25,
-        backgroundColor: '#f39c12',
+        backgroundColor: 'rgb(243, 156, 18)',
         alignItems: 'center',
         marginBottom: 20,
     },
     englishbuttonText: {
-        color: '#000',
+        color: 'rgb(0, 0, 0)',
         fontFamily: 'Math-Italic'
     },
 });
