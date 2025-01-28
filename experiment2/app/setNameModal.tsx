@@ -1,13 +1,26 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { StyleSheet, TouchableWithoutFeedback, View, Keyboard, TouchableOpacity, Text } from 'react-native';
 import { TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import commonFunctions from '@/scripts/commonFunctions';
+import uuid from 'react-native-uuid';
+
+const {
+    setDataToDevice
+} = commonFunctions();
+
+const setAccountName = (name: string, onStart: { (): void; }) => {
+    setDataToDevice('accountName', name)
+    let accountid = uuid.v4();
+    setDataToDevice('accountid', accountid)
+    onStart();
+};
 
 interface MapProps {
-    setAccountName: (accountName: string) => void;
+    onStart: () => void;
 }
 
-const Map: React.FC<MapProps> = ({ setAccountName }) => {
+const Map: React.FC<MapProps> = ({ onStart }) => {
     const { t } = useTranslation();
     const [name, setName] = useState('');
     return (
@@ -20,7 +33,7 @@ const Map: React.FC<MapProps> = ({ setAccountName }) => {
                     value={name}
                     onChangeText={setName}
                 />
-                <TouchableOpacity style={styles.button} onPress={() => setAccountName(name)}>
+                <TouchableOpacity style={styles.button} onPress={() => setAccountName(name, onStart)}>
                     <Text style={styles.buttonText}>{t("ok")}</Text>
                 </TouchableOpacity>
             </View>

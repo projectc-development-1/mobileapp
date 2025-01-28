@@ -1,18 +1,29 @@
-import React from 'react';
+import commonFunctions from '@/scripts/commonFunctions';
+import React, { useState } from 'react';
 import { StyleSheet, TouchableWithoutFeedback, View, Keyboard, TouchableOpacity, Text } from 'react-native';
 
+const {
+    setDataToDevice
+} = commonFunctions();
+
+ 
+const setLanguage = (lng: string, onStart: { (): void; } ) => {
+    setDataToDevice('language', lng)
+    onStart();
+};
+
 interface MapProps {
-    setLanguage: (lng: string) => void;
+    onStart: () => void;
 }
 
-const Map: React.FC<MapProps> = ({ setLanguage }) => {
+const Map: React.FC<MapProps> = ({ onStart }) => {
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.container}>
-                <TouchableOpacity style={styles.chinesebutton} onPress={() => setLanguage('zh')}>
+                <TouchableOpacity style={styles.chinesebutton} onPress={() => setLanguage('zh', onStart)}>
                     <Text style={styles.chinesebuttonText}>中文</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.englishbutton} onPress={() => setLanguage('en')}>
+                <TouchableOpacity style={styles.englishbutton} onPress={() => setLanguage('en', onStart)}>
                     <Text style={styles.englishbuttonText}>English</Text>
                 </TouchableOpacity>
             </View>

@@ -298,8 +298,8 @@ export default Map;
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        width: '120%',
-        height: '120%',
+        width: '100%',
+        height: '100%',
     },
     paragraph: {
         fontSize: 18,
@@ -331,8 +331,8 @@ const styles = StyleSheet.create({
     },
     toolListContainer: {
         position: 'absolute',
-        width: '15%',
-        height: '23%',
+        width: '18%',
+        height: '25%',
         left: '5%',
         top: '65%',
         backgroundColor: 'rgba(255, 255, 255, 0.6)',

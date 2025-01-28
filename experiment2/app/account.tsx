@@ -10,8 +10,8 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
 
     return (
         <View style={styles.container}>
-            <Link href="/takePhotoForProfile" >
-                <Image style={styles.icon} source={require('../assets/images/notesIcon50X50.png')} />
+            <Link style={styles.link} href="/takePhotoForProfile" >
+                <Image source={require('../assets/images/notesIcon50X50.png')} />
             </Link>
         </View>
     )
@@ -22,8 +22,11 @@ export default Map;
 const styles = StyleSheet.create({
     container: {    
         zIndex: 2,
+        top: '80%',
+        left: '38%',
     },
-    icon: {
+    link: {
+        top: '100%',
         left: '5%',
     },
     textContainer: {

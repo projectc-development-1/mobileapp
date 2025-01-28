@@ -1,7 +1,6 @@
 import commonFunctions from "@/scripts/commonFunctions";
 import healthCheck from "@/scripts/healthCheck";
 import { useRef, useState } from "react";
-import uuid from 'react-native-uuid';
 import * as SecureStore from 'expo-secure-store';
 import { View } from "react-native";
 import Map from './map';
@@ -9,6 +8,7 @@ import SetNameModal from './setNameModal';
 import SetLanguageModal from './setLanguageModal';
 import Account from './account';
 import '../i18n.ts';
+import React from "react";
 
 export default function App() {
 
@@ -19,27 +19,10 @@ export default function App() {
         checkAccountName
     } = healthCheck()
 
-    const {
-        setDataToDevice
-    } = commonFunctions();
-
     let [languageCheckInd, setLanguageCheckInd] = useState<number>(0);
-    const setLanguage = (lng: string) => {
-        setDataToDevice('language', lng)
-        onStart();
-    };
-
     let [accountNameCheckInd, setAccountNameCheckInd] = useState<number>(0);
+    let [showMap, setShowMap] = useState<boolean>(false);
     let selfAccount = useRef<{ accountName: string; accountID: string } | null>(null);
-    const setAccountName = (name: string) => {
-        setDataToDevice('accountName', name)
-        let accountid = uuid.v4();
-        setDataToDevice('accountid', accountid)
-        selfAccount.current = { accountName: name, accountID: accountid };
-        onStart();
-    };
-
-    const [showMap, setShowMap] = useState<boolean>(false);
 
     let onStartCheckingDone = false;
     const onStart = async () => {
@@ -69,15 +52,17 @@ export default function App() {
     return (
         <View style={{height: '100%'}}>
             {showMap && (
-                <Map selfAccount={selfAccount.current}/>
+                <>
+                <Map selfAccount={selfAccount.current} />
+                <Account selfAccount={selfAccount.current} />
+                </>
             )}
             {languageCheckInd==2 && (
-                <SetLanguageModal setLanguage={setLanguage} />
+                <SetLanguageModal onStart={onStart} />
             )}
             {accountNameCheckInd==2 && (
-                <SetNameModal setAccountName={setAccountName}/>
+                <SetNameModal onStart={onStart}/>
             )}
-            <Account selfAccount={selfAccount.current}/>
         </View> 
     );
 }
