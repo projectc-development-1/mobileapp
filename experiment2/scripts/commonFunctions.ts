@@ -1,17 +1,17 @@
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18next from 'i18next';
 import { useRef } from 'react';
 
 export default function CommonFunctions() {
 
-    let tempStoredValue = useRef<string | null>('');
     let ws = useRef<WebSocket>(new WebSocket('wss://o8e86zvvfl.execute-api.ap-south-1.amazonaws.com/development/'));
 
     ws.current.onopen = () => {
         console.log('Connected to server');
     }
 
-    const setDataToDevice = async (key: string, value: string) => {
+    const setDataToSecureStore = async (key: string, value: string) => {
         try {
             await SecureStore.setItemAsync(key, value);
         } catch (e) {
@@ -19,10 +19,27 @@ export default function CommonFunctions() {
         }
     };
 
-    const getDataFromDevice = async (key: string) => {
+    const setDataToAsyncStore = async (key: string, value: string) => {
         try {
-            tempStoredValue.current = (await SecureStore.getItemAsync(key));
-            return tempStoredValue.current;
+            await AsyncStorage.setItem(key, value);
+        } catch (e) {
+            console.error('Failed to save data', e);
+        }
+    };
+
+    const getDataFromSecureStore = async (key: string) => {
+        try {
+            let tempStoredValue = (await SecureStore.getItemAsync(key));
+            return tempStoredValue;
+        } catch (e) {
+            console.error('Failed to retrieve data', e);
+        }
+    };
+
+    const getDataFromAsyncStore = async (key: string) => {
+        try {
+            let tempStoredValue = (await AsyncStorage.getItem(key));
+            return tempStoredValue;
         } catch (e) {
             console.error('Failed to retrieve data', e);
         }
@@ -46,8 +63,10 @@ export default function CommonFunctions() {
 
     return {
         languageSwitcher,
-        setDataToDevice,
-        getDataFromDevice,
+        setDataToSecureStore,
+        setDataToAsyncStore,
+        getDataFromSecureStore,
+        getDataFromAsyncStore,
         wsSend,
         ws
     };

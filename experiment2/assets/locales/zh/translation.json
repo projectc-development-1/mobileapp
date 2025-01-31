@@ -5,5 +5,8 @@
     "location_access_warnning_message_body": "請授權位置存取以繼續。",
     "location_status_warning_message_title": "位置狀態警告",
     "location_status_warning_message_body": "請啟用位置服務以繼續。",
-    "Bad_network": "等等呀。。。"
-  }
+    "Bad_network": "等等呀。。。",
+    "cameraPermissionRequired": "請授權相機存取權限以繼續。",
+    "requestPermission": "請求權限",
+    "save": "保存"
+}

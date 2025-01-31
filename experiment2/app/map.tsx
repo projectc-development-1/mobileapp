@@ -1,7 +1,7 @@
 import * as Location from "expo-location";
 import { LocationObject } from "expo-location";
 import React, { useRef, useState } from "react";
-import { View, StyleSheet, Platform, Alert, TouchableOpacity, Image } from "react-native";
+import { View, StyleSheet, Platform, Alert, TouchableOpacity, Image, Text } from "react-native";
 import { Map as ImmutableMap } from 'immutable';
 import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { useTranslation } from "react-i18next";
@@ -12,16 +12,19 @@ interface AdvanceLocationObject extends LocationObject {
     accountName: string;
     accountID: string;
     unreadMsgMapAmount: number;
+    photoInBase64: string;
 }
 
 interface MapProps {
-    selfAccount: { accountName: string; accountID: string } | null;
+    selfAccount: { accountName: string; accountID: string; } | null;
 }
+
+const { getDataFromSecureStore } = commonFunctions();
 
 const Map: React.FC<MapProps> = ({ selfAccount }) => {
     const { t } = useTranslation();
     const {
-        getDataFromDevice,
+        getDataFromSecureStore,
         wsSend,
         ws
     } = commonFunctions();
@@ -46,16 +49,8 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
         const checkLocationAccess = async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
-                console.log('Permission to access location was denied');
-                Alert.alert(
-                    t("location_access_warning_message_title"), 
-                    t("location_access_warning_message_body"), 
-                    [
-                        { text: 'OK', onPress: () => {
-                            RNExitApp.exitApp() 
-                        }},
-                    ]
-                );
+                // ask for permission
+                Location.requestForegroundPermissionsAsync();
                 stopUpdating.current = true;
             }
         }
@@ -95,8 +90,8 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                     "data": {
                         "action": "INSERT",
                         "data": {
-                            "accountName": await getDataFromDevice("accountName"),
-                            "accountID": await getDataFromDevice("accountid"),
+                            "accountName": await getDataFromSecureStore("accountName"),
+                            "accountID": await getDataFromSecureStore("accountid"),
                             "coords": {
                                 "latitude": (selflocation.current[0].coords.latitude).toString(), 
                                 "longitude": (selflocation.current[0].coords.longitude).toString(),
@@ -172,11 +167,14 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                                 heading: parseFloat(data[i]['coords']['heading']),
                                 speed: parseFloat(data[i]['coords']['speed']),
                             },
-                            timestamp: parseFloat(data[i]['timestamp'])
+                            timestamp: parseFloat(data[i]['timestamp']),
+                            photoInBase64: data[i]['photoInBase64']
                         }
                     );
                 }
-                setOtherlocation(dummyLocations);
+                if(dummyLocations.length>0){
+                    setOtherlocation(dummyLocations);
+                }
             })
             .catch((error) => {
                 console.error('Error:', error);
@@ -230,7 +228,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
 
     let [openToolBox, setOpenToolBox] = useState<boolean>(false);
     let [openTargetAccountChatModal, setOpenTargetAccountChatModal] = useState<boolean>(false);
-    let [targetAccount, setTargetAccount] = useState<{ accountName: string; accountID: string } | null>(null);
+    let [targetAccount, setTargetAccount] = useState<{ accountName: string; accountID: string; photoInBase64: string; } | null>(null);
 
     return (
         <View style={styles.container}>
@@ -259,7 +257,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                         coordinate={{latitude: other_location.coords.latitude, longitude: other_location.coords.longitude}}
                         onPress={() => {
                             console.log('Marker pressed');
-                            setTargetAccount({ accountName: other_location.accountName, accountID: other_location.accountID });
+                            setTargetAccount({ accountName: other_location.accountName, accountID: other_location.accountID, photoInBase64: other_location.photoInBase64 });
                             setOpenToolBox(true);
                         }}
                     >
@@ -269,6 +267,8 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                 ))}
             </MapView>
             {openToolBox && (
+                <>
+                <Image source={{ uri: targetAccount?.photoInBase64 }} style={styles.icon}/>
                 <View style={styles.toolListContainer}>
                     <TouchableOpacity onPress={() => setOpenTargetAccountChatModal(!openTargetAccountChatModal)} style={{paddingVertical: 10}}>
                         <Image source={require('../assets/images/chatIcon50X40.png')}/>
@@ -280,6 +280,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                         <Image source={require('../assets/images/notesIcon50X50.png')}/>
                     </TouchableOpacity>
                 </View>
+                </>
             )}
             {openTargetAccountChatModal && (
                 <TargetAccountChatModal 
@@ -344,4 +345,9 @@ const styles = StyleSheet.create({
         color: 'rgb(0, 0, 0)',
         marginBottom: 5,
     },
+    icon: {
+        width: 20,
+        height: 20,
+        borderRadius: 50,
+    }
 });

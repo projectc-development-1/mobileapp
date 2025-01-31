@@ -2,13 +2,10 @@ import commonFunctions from '@/scripts/commonFunctions';
 import React, { useState } from 'react';
 import { StyleSheet, TouchableWithoutFeedback, View, Keyboard, TouchableOpacity, Text } from 'react-native';
 
-const {
-    setDataToDevice
-} = commonFunctions();
-
+const { setDataToSecureStore } = commonFunctions();
  
 const setLanguage = (lng: string, onStart: { (): void; } ) => {
-    setDataToDevice('language', lng)
+    setDataToSecureStore('language', lng)
     onStart();
 };
 
@@ -56,7 +53,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     chinesebuttonText: {
-        color: 'rgba(0, 0, 0, 0)',
+        color: 'rgb(0, 0, 0)',
         fontFamily: 'Math-Italic'
     },
     englishbutton: {

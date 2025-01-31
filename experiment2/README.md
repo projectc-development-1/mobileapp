@@ -81,7 +81,11 @@ expo install react-native-simple-toast
 expo install expo-camera
 expo install immutable
 expo install expo-secure-store
-
+expo install @react-native-async-storage/async-storage
+expo install expo-font
+expo install react-native-elements
+expo install expo-image-manipulator
+expo install expo-image-picker
 
 
 Google API kys #################################
@@ -113,3 +117,8 @@ https://console.cloud.google.com/iam-admin/serviceaccounts?authuser=4&inv=1&invt
 Reference how to build apk locally
 https://docs.expo.dev/build-reference/apk/
 https://louis383.medium.com/%E6%89%8B%E5%8B%95%E5%AE%89%E8%A3%9D-aab-android-app-bundle-%E6%AA%94%E6%A1%88-b2a49b75b9c
+
+
+Icon reference
+https://oblador.github.io/react-native-vector-icons/     -- MaterialIcons
+https://reactnativeelements.com/docs/1.2.0/icon

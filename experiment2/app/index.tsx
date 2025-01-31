@@ -1,4 +1,3 @@
-import commonFunctions from "@/scripts/commonFunctions";
 import healthCheck from "@/scripts/healthCheck";
 import { useRef, useState } from "react";
 import * as SecureStore from 'expo-secure-store';
@@ -22,7 +21,7 @@ export default function App() {
     let [languageCheckInd, setLanguageCheckInd] = useState<number>(0);
     let [accountNameCheckInd, setAccountNameCheckInd] = useState<number>(0);
     let [showMap, setShowMap] = useState<boolean>(false);
-    let selfAccount = useRef<{ accountName: string; accountID: string } | null>(null);
+    let selfAccount = useRef<{ accountName: string; accountID: string; photoInBase64: string } | null>(null);
 
     let onStartCheckingDone = false;
     const onStart = async () => {
@@ -32,7 +31,7 @@ export default function App() {
             let accountNameHealthCheck = await checkAccountName();
             setAccountNameCheckInd(accountNameHealthCheck===true ? 1 : 2);
             if(accountNameHealthCheck){
-                selfAccount.current = { accountName: (await SecureStore.getItemAsync('accountName')) || '', accountID: (await SecureStore.getItemAsync('accountid')) || '' };
+                selfAccount.current = { accountName: (await SecureStore.getItemAsync('accountName')) || '', accountID: (await SecureStore.getItemAsync('accountid')) || '', photoInBase64: (await SecureStore.getItemAsync('profilePhoto')) || '' };
                 setShowMap(true);
                 let locationAccessHealthCheck = checkLocationAccess();
                 if(await locationAccessHealthCheck){

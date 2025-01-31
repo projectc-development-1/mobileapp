@@ -5,14 +5,12 @@ import { useTranslation } from 'react-i18next';
 import commonFunctions from '@/scripts/commonFunctions';
 import uuid from 'react-native-uuid';
 
-const {
-    setDataToDevice
-} = commonFunctions();
+const { setDataToSecureStore } = commonFunctions();
 
 const setAccountName = (name: string, onStart: { (): void; }) => {
-    setDataToDevice('accountName', name)
+    setDataToSecureStore('accountName', name)
     let accountid = uuid.v4();
-    setDataToDevice('accountid', accountid)
+    setDataToSecureStore('accountid', accountid)
     onStart();
 };
 

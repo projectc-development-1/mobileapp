@@ -23,4 +23,12 @@ const initI18n = async () => {
 
 initI18n();
 
+export const getFontFamily = () => {
+    const currentLanguage = i18n.language;
+    if (currentLanguage === 'zh') {
+      return 'NotoSansTC-VariableFont_wght'; // Replace with your Chinese font family
+    }
+    return 'Oswald-VariableFont_wght'; // Replace with your English font family
+  };
+
 export default i18n;

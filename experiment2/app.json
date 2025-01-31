@@ -36,7 +36,13 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/NotoSansTC-VariableFont_wght.ttf", "./assets/fonts/Oswald-VariableFont_wght.ttf"]
+        }
+      ]
     ]
   }
 }
