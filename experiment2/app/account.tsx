@@ -1,10 +1,11 @@
-import { View, StyleSheet, TouchableOpacity, Image, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Text, TextInput, ScrollView } from 'react-native';
 import React, { useState } from 'react';
 import TakePhotoForProfile from './takePhotoForProfile';
 import commonFunctions from '@/scripts/commonFunctions';
 import { useFonts } from 'expo-font';
 import { useTranslation } from 'react-i18next';
 import { getFontFamily } from '@/i18n';
+import { Icon } from 'react-native-elements';
 
 const { getDataFromSecureStore } = commonFunctions();
 
@@ -18,6 +19,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
 
     let [editProfile, setEditProfile] = useState(false);
     let [iconBody, setIconBody] = useState('');
+    const [introduction, setIntroduction] = React.useState('Who are you?');
 
     async function loadProfilePhoto() {
         setTimeout(async () => {
@@ -36,14 +38,46 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                 </TouchableOpacity>
             </View>
             {editProfile && (
-                <View style={styles.takePhotoForProfileContainer}>
-                    <TakePhotoForProfile 
-                        selfAccount={selfAccount} 
-                        iconBody={iconBody}
-                        setEditProfile={setEditProfile} 
-                        loadProfilePhoto={loadProfilePhoto}
-                    />
-                </View>
+                <ScrollView style={styles.profileContainer}>
+                    <TouchableOpacity style={styles.closeButton} onPress={() => { loadProfilePhoto(); setEditProfile(false); } }>
+                        <Icon name='close' />
+                    </TouchableOpacity>
+                    <View style={{alignItems: 'center', marginTop: 50, marginBottom: 50}}>
+                        <TakePhotoForProfile 
+                            selfAccount={selfAccount} 
+                            iconBody={iconBody}
+                            setEditProfile={setEditProfile} 
+                            loadProfilePhoto={loadProfilePhoto}
+                        />
+                    </View>
+                    <View style={{alignItems: 'center'}}>
+                        <View style={styles.introductionContainer}>
+                            <TextInput
+                                style={[styles.introduction, { fontFamily }]}
+                                onChangeText={setIntroduction}
+                                value={introduction}
+                            />
+                        </View>
+                    </View>
+                    <View style={{alignItems: 'center'}}>
+                        <View style={styles.hobbiesContainer}>
+                            <TextInput
+                                style={[styles.hobbies, { fontFamily }]}
+                                onChangeText={setIntroduction}
+                                value={introduction}
+                            />
+                        </View>
+                    </View>
+                    <View style={{alignItems: 'center'}}>
+                        <View style={styles.whatAreYouLookingForContainer}>
+                            <TextInput
+                                style={[styles.whatAreYouLookingFor, { fontFamily }]}
+                                onChangeText={setIntroduction}
+                                value={introduction}
+                            />
+                        </View>
+                    </View>
+                </ScrollView>
             )}
         </>
     )
@@ -57,13 +91,12 @@ const styles = StyleSheet.create({
         left: '5%',
         top: '5%',
     },
-    takePhotoForProfileContainer: {
-        backgroundColor: 'rgba(255, 255, 255, 0.73)',
+    profileContainer: {
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
         position: 'absolute',
         zIndex: 2,
         width: '100%',
         height: '100%',
-        borderRadius: 50,
     },
     icon: {
         width: 100,
@@ -76,5 +109,41 @@ const styles = StyleSheet.create({
         color: 'rgb(0, 0, 0)',
         marginTop: 10,
         fontWeight: 'bold',
+    },
+    closeButton: {
+        position: 'absolute',
+        top: '10%',
+        left: '5%',
+        zIndex: 2,
+    },
+    introductionContainer: {
+        backgroundColor: 'rgb(255, 255, 255)',
+        width: '70%',
+        height: '40%',
+        borderRadius: 25,
+    },
+    introduction: {
+        fontSize: 20,
+        color: 'rgb(0, 0, 0)',
+    },
+    hobbiesContainer: {
+        backgroundColor: 'rgb(255, 255, 255)',
+        width: '70%',
+        height: '40%',
+        borderRadius: 25,
+    },
+    hobbies: {
+        fontSize: 20,
+        color: 'rgb(0, 0, 0)',
+    },
+    whatAreYouLookingForContainer: {
+        backgroundColor: 'rgb(255, 255, 255)',
+        width: '70%',
+        height: '40%',
+        borderRadius: 25,
+    },
+    whatAreYouLookingFor: {
+        fontSize: 20,
+        color: 'rgb(0, 0, 0)',
     },
 });

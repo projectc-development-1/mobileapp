@@ -131,7 +131,7 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
             if(data=='"profile updated"'){
                 setDataToSecureStore('profilePhoto', photoInBase64.current);
                 setLoading(false);
-                backAction();
+                loadProfilePhoto();
             }
         })
         .catch((error) => {
@@ -139,22 +139,14 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
         });
     }
 
-    function backAction(){
-        loadProfilePhoto();
-        setEditProfile(false);
-    }
-
     return (
-        <View style={styles.container}>
+        <>
             {loading &&
                 <Image source={require('../assets/images/loading.gif')}/> 
             }
             {!loading &&
                 <>
-                <TouchableOpacity style={styles.closeButton} onPress={backAction}>
-                    <Icon name='close' />
-                </TouchableOpacity>
-                <View style={styles.cameraContainer}>
+                <>
                     {!editPhoto &&
                         <Image source={{ uri: photoInBase64.current }} style={styles.icon}/> 
                     }
@@ -174,9 +166,16 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
                             </View>
                         </>
                     }
-                    <TouchableOpacity onPress={() => setEditPhoto(!editPhoto)} >
-                        <Icon name={ editPhoto==false ? 'edit' : 'edit-off' }/>
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                        <TouchableOpacity onPress={() => setEditPhoto(!editPhoto)} >
+                            <Icon name={ editPhoto==false ? 'edit' : 'edit-off' }/>
+                        </TouchableOpacity>
+                        {needToSave && 
+                            <TouchableOpacity onPress={saveAction} style={{ marginLeft: 20 }}>
+                                <Icon name='save'/>
+                            </TouchableOpacity>
+                        }
+                    </View>
                     {editPhoto && permission && !permission.granted &&
                         <View style={styles.container}>
                             <Text style={styles.message}>{t('cameraPermissionRequired')}</Text>
@@ -185,18 +184,10 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
                             </TouchableOpacity>
                         </View>
                     }
-                </View>
-
-                <View style={styles.buttonContainer}>
-                    {needToSave && 
-                        <TouchableOpacity onPress={saveAction}>
-                            <Text style={styles.text}>{t('save')}</Text>
-                        </TouchableOpacity>
-                    }
-                </View>
+                </>
                 </>
             }
-        </View>
+        </>
     );
 }
 
@@ -218,11 +209,6 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         marginBottom: 30,
     },
-    buttonContainer: {
-        top: '100%',
-        height: '20%',
-        marginBottom: 30,
-    },
     cameraContainer: {
         top: 10,
         height: '30%',
@@ -236,10 +222,5 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         color: 'rgb(0, 0, 0)',
-    },
-    closeButton: {
-        position: 'absolute',
-        left: 10,
-        zIndex: 1,
     },
 });
