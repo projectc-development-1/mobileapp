@@ -20,6 +20,8 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
     let [editProfile, setEditProfile] = useState(false);
     let [iconBody, setIconBody] = useState('');
     const [introduction, setIntroduction] = React.useState('Who are you?');
+    const [hobbies, setHobbies] = React.useState('What are your hobbies?');
+    const [whatAreYouLookingFor, setWhatAreYouLookingFor] = React.useState('What are you looking for?');
 
     async function loadProfilePhoto() {
         setTimeout(async () => {
@@ -64,8 +66,8 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                             <View style={styles.hobbiesContainer}>
                                 <TextInput
                                     style={[styles.hobbies, { fontFamily }]}
-                                    onChangeText={setIntroduction}
-                                    value={introduction}
+                                    onChangeText={setHobbies}
+                                    value={hobbies}
                                 />
                             </View>
                         </View>
@@ -73,8 +75,8 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                             <View style={styles.whatAreYouLookingForContainer}>
                                 <TextInput
                                     style={[styles.whatAreYouLookingFor, { fontFamily }]}
-                                    onChangeText={setIntroduction}
-                                    value={introduction}
+                                    onChangeText={setWhatAreYouLookingFor}
+                                    value={whatAreYouLookingFor}
                                 />
                             </View>
                         </View>
@@ -121,7 +123,8 @@ const styles = StyleSheet.create({
     introductionContainer: {
         backgroundColor: 'rgb(255, 255, 255)',
         width: '70%',
-        height: '60%',
+        height: 200,
+        marginBottom: 50,
         borderRadius: 25,
     },
     introduction: {
@@ -131,7 +134,8 @@ const styles = StyleSheet.create({
     hobbiesContainer: {
         backgroundColor: 'rgb(255, 255, 255)',
         width: '70%',
-        height: '60%',
+        height: 200,
+        marginBottom: 50,
         borderRadius: 25,
     },
     hobbies: {
@@ -141,7 +145,8 @@ const styles = StyleSheet.create({
     whatAreYouLookingForContainer: {
         backgroundColor: 'rgb(255, 255, 255)',
         width: '70%',
-        height: '60%',
+        height: 200,
+        marginBottom: 50,
         borderRadius: 25,
     },
     whatAreYouLookingFor: {
