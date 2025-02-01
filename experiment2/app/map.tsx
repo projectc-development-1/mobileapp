@@ -111,7 +111,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                 console.log('Success:', data);
             })
             .catch((error) => {
-                console.error('Error:', error);
+                console.error('getSelfLocation - Error:', error);
             });
         }
 
@@ -177,7 +177,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                 }
             })
             .catch((error) => {
-                console.error('Error:', error);
+                console.error('getOtherLocation - Error:', error);
             });        
         }
 
@@ -268,8 +268,9 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
             </MapView>
             {openToolBox && (
                 <>
-                <Image source={{ uri: targetAccount?.photoInBase64 }} style={styles.icon}/>
                 <View style={styles.toolListContainer}>
+                    <Image source={{ uri: targetAccount?.photoInBase64 }} style={styles.targetIcon}/>
+                    <Text>{targetAccount?.accountName}</Text>
                     <TouchableOpacity onPress={() => setOpenTargetAccountChatModal(!openTargetAccountChatModal)} style={{paddingVertical: 10}}>
                         <Image source={require('../assets/images/chatIcon50X40.png')}/>
                     </TouchableOpacity>
@@ -329,6 +330,10 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 16,
         color: 'rgb(0, 0, 0)',
+    },
+    targetIcon: {
+        width: 30,
+        height: 30,
     },
     toolListContainer: {
         position: 'absolute',

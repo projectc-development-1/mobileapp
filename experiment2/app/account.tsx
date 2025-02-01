@@ -20,8 +20,10 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
     let [iconBody, setIconBody] = useState('');
 
     async function loadProfilePhoto() {
-        const photoInBase64 = await getDataFromSecureStore('profilePhoto');
-        setIconBody(photoInBase64 ?? '');
+        setTimeout(async () => {
+            const photoInBase64 = await getDataFromSecureStore('profilePhoto');
+            setIconBody(photoInBase64 ?? '');
+        }, 500);
     }
     loadProfilePhoto();
 

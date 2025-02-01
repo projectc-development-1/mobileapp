@@ -34,10 +34,19 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
     let [loading, setLoading] = useState(false);
     let [needToSave, setNeedToSave] = useState(false);
 
+    const compressImage = async (uri: string) => {
+        const result = await manipulateAsync(
+            uri,
+            [{ resize: { width: 800 } }], // Resize the image to a width of 800px
+            { compress: 0.1 } // Compress the image to 70% quality
+        );
+        return result.uri;
+    };
+
     async function pickImage() {
         // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images', 'videos'],
+            mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
@@ -53,7 +62,9 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
                 setNeedToSave(true);
                 setEditPhoto(false);
             };
-            const response = await fetch(result.assets[0].uri);
+            let response = await fetch(result.assets[0].uri);
+            const compressedUri = await compressImage(response.url);
+            response = await fetch(compressedUri);
             const blob = await response.blob();
             reader.readAsDataURL(blob);
         }
@@ -89,7 +100,7 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
                             reader.readAsDataURL(blob);
                         });
                 } else {
-                    Alert.alert('Error', 'Failed to capture photo.');
+                    Alert.alert('takePicture - Error', 'Failed to capture photo.');
                 }
             })
         };
@@ -101,7 +112,7 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
         fetch('https://zd7pvkao33.execute-api.ap-south-1.amazonaws.com/updateUserProfile', {
             method: 'POST',
             headers: {
-            'Content-Type': 'application/form-data',
+            'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 "action" : "communication",
@@ -109,20 +120,22 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
                     "action": "updateProfilePhoto",
                     "data": {
                         "accountID": selfAccount?.accountID,
-                        "photoInBase64": photoInBase64.current.toString()
+                        "photoInBase64": photoInBase64.current
                     }
                 }
             })
         })
-        .then(response => response.json())
+        .then(response => response.text())
         .then(async data => {
-            setDataToSecureStore('profilePhoto', photoInBase64.current);
-            console.log('Profile photo updated');
-            setLoading(false);
-            backAction();
+            console.log(data);
+            if(data=='"profile updated"'){
+                setDataToSecureStore('profilePhoto', photoInBase64.current);
+                setLoading(false);
+                backAction();
+            }
         })
         .catch((error) => {
-            console.error('Error:', error);
+            console.error('saveAction - Error:', error);
         });
     }
 
