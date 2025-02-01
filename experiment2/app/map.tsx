@@ -1,13 +1,15 @@
 import * as Location from "expo-location";
 import { LocationObject } from "expo-location";
 import React, { useRef, useState } from "react";
-import { View, StyleSheet, Platform, Alert, TouchableOpacity, Image, Text } from "react-native";
+import { View, StyleSheet, Platform, Alert, TouchableOpacity, Image, Text, ScrollView } from "react-native";
 import { Map as ImmutableMap } from 'immutable';
 import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { useTranslation } from "react-i18next";
 import RNExitApp from 'react-native-exit-app';
 import commonFunctions from "@/scripts/commonFunctions";
 import TargetAccountChatModal from "./targetAccountChatModal";
+import { getFontFamily } from "@/i18n";
+import { Icon } from "react-native-elements";
 interface AdvanceLocationObject extends LocationObject {
     accountName: string;
     accountID: string;
@@ -19,10 +21,9 @@ interface MapProps {
     selfAccount: { accountName: string; accountID: string; } | null;
 }
 
-const { getDataFromSecureStore } = commonFunctions();
-
 const Map: React.FC<MapProps> = ({ selfAccount }) => {
     const { t } = useTranslation();
+    const fontFamily = getFontFamily();
     const {
         getDataFromSecureStore,
         wsSend,
@@ -268,17 +269,21 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
             </MapView>
             {openToolBox && (
                 <>
-                <View style={styles.toolListContainer}>
+                <View style={styles.targetIconContainer}>
+                    <ScrollView horizontal={true} style={styles.targetAccountNameContainer} >
+                        <Text style={[styles.targetAccountName, { fontFamily }]}>{targetAccount?.accountName}</Text>
+                    </ScrollView>
                     <Image source={{ uri: targetAccount?.photoInBase64 }} style={styles.targetIcon}/>
-                    <Text>{targetAccount?.accountName}</Text>
-                    <TouchableOpacity onPress={() => setOpenTargetAccountChatModal(!openTargetAccountChatModal)} style={{paddingVertical: 10}}>
-                        <Image source={require('../assets/images/chatIcon50X40.png')}/>
+                </View>
+                <View style={styles.toolListContainer}>
+                    <TouchableOpacity onPress={() => setOpenTargetAccountChatModal(!openTargetAccountChatModal)} style={{paddingHorizontal: 10}}>
+                        <Icon name='chat' />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => console.log('Button 2 pressed')} style={{paddingVertical: 10}}>
-                        <Image source={require('../assets/images/informationIcon54X44.png')}/>
+                    <TouchableOpacity onPress={() => console.log('Button 2 pressed')} style={{paddingHorizontal: 10}}>
+                        <Icon name='info' />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => console.log('Button 3 pressed')} style={{paddingVertical: 10}}>
-                        <Image source={require('../assets/images/notesIcon50X50.png')}/>
+                    <TouchableOpacity onPress={() => console.log('Button 3 pressed')} style={{paddingHorizontal: 10}}>
+                        <Icon name='notes' />
                     </TouchableOpacity>
                 </View>
                 </>
@@ -331,28 +336,45 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: 'rgb(0, 0, 0)',
     },
+    targetAccountNameContainer: {
+        textAlign: 'center',
+        width: 150,
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+    },
+    targetAccountName: {
+        alignItems: 'center',
+        fontSize: 10,
+        color: 'rgb(0, 0, 0)',
+        marginTop: 10,
+        fontWeight: 'bold',
+    },
     targetIcon: {
-        width: 30,
-        height: 30,
+        width: 50,
+        height: 50,
+        borderRadius: 50,
     },
     toolListContainer: {
         position: 'absolute',
-        width: '18%',
-        height: '25%',
-        left: '5%',
-        top: '65%',
+        width: '70%',
+        height: '5%',
+        left: '15%',
+        top: '85%',
         backgroundColor: 'rgba(255, 255, 255, 0.6)',
         padding: 10,
         borderRadius: 100,
+        flexDirection: 'row', 
+        justifyContent: 'space-around'
+    },
+    targetIconContainer: {
+        position: 'absolute',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        left: '31%',
+        top: '75%',
     },
     toolListItem: {
         fontSize: 16,
         color: 'rgb(0, 0, 0)',
         marginBottom: 5,
     },
-    icon: {
-        width: 20,
-        height: 20,
-        borderRadius: 50,
-    }
 });

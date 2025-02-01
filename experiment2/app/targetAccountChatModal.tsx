@@ -3,6 +3,7 @@ import { StyleSheet, TouchableWithoutFeedback, View, Keyboard, TouchableOpacity,
 import uuid from 'react-native-uuid';
 import { TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { Icon } from 'react-native-elements';
 
 interface MapProps {
     wsSend: (data: string) => void;
@@ -173,21 +174,10 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
     return (
         <KeyboardAvoidingView
             style={styles.container}
-            keyboardVerticalOffset={50}
+            keyboardVerticalOffset={10}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
                 <View>
-                    {targetAccount && (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                            <Image
-                                source={require('../assets/images/icon.png')}
-                                style={{ width: 40, height: 40, borderRadius: 20, marginRight: 10 }}
-                            />
-                            <ScrollView horizontal={true} style={styles.accountNameContainer} >
-                                <Text style={styles.accountNameText}>{targetAccount.accountName}</Text>
-                            </ScrollView>
-                        </View>
-                    )}
                     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                         <ScrollView ref={scrollViewRef}>
                             {messages && messages.map((msg, index) => (
@@ -211,15 +201,15 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                             }}
                             onChange={(event) => {
                                 if(event.nativeEvent.text.length > 0){
-                                    setTextInputWidth(73);
+                                    setTextInputWidth(75);
                                 }else{
                                     setTextInputWidth(90);
                                 }
                             }}
                         />
                         {tempInputMessage.length > 0 && (
-                            <TouchableOpacity style={[styles.button, { opacity: sendButtonDisabled ? 0.5 : 1 }]} onPress={sendMsg} disabled={sendButtonDisabled}>
-                                <Text style={styles.buttonText}>{t('S')}</Text>
+                            <TouchableOpacity style={[styles.button]} onPress={sendMsg} disabled={sendButtonDisabled}>
+                                <Icon name='send'/>
                             </TouchableOpacity>
                         )}
                     </View>
@@ -236,12 +226,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         position: 'absolute',
-        zIndex: 0,
-        width: '55%',
-        height: '80%',
+        zIndex: 3,
+        width: '80%',
+        height: '65%',
         borderRadius: 30,
         top: '8%',
-        left: '25%',
+        left: '10%',
     },
     input: {
         paddingHorizontal: 10,
@@ -252,31 +242,19 @@ const styles = StyleSheet.create({
         marginRight: 10,
         fontSize: 15,
         textAlign: 'left',
-        fontFamily: 'Math-Italic',
     },
     button: {
-        width: '20%',
-        paddingVertical: 10,
+        width: '15%',        
         borderWidth: 1,
         borderColor: 'rgb(204, 204, 204)',
-        borderRadius: 25,
+        borderRadius: 50,
         backgroundColor: 'rgb(231, 76, 60)',
         alignItems: 'center',
-        opacity: 1,
+        justifyContent: 'center',
     },
     buttonText: {
         color: 'rgb(0, 0, 0)',
         fontFamily: 'Math-Italic'
-    },
-    accountNameContainer: {
-        padding: 10,
-        marginVertical: 5,
-        backgroundColor: 'rgb(255, 255, 255)',
-        borderRadius: 25,
-    },
-    accountNameText: {
-        fontSize: 16,
-        color: 'rgb(51, 51, 51)',
     },
     messageContainerForTargetAccount: {
         padding: 10,
