@@ -166,6 +166,14 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
                             </View>
                         </>
                     }
+                    {editPhoto && permission && !permission.granted &&
+                        <View style={styles.container}>
+                            <Text style={styles.message}>{t('cameraPermissionRequired')}</Text>
+                            <TouchableOpacity onPress={requestPermission}>
+                                <Text style={styles.text}>{t('requestPermission')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    }
                     <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                         <TouchableOpacity onPress={() => setEditPhoto(!editPhoto)} >
                             <Icon name={ editPhoto==false ? 'edit' : 'edit-off' }/>
@@ -176,14 +184,6 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
                             </TouchableOpacity>
                         }
                     </View>
-                    {editPhoto && permission && !permission.granted &&
-                        <View style={styles.container}>
-                            <Text style={styles.message}>{t('cameraPermissionRequired')}</Text>
-                            <TouchableOpacity onPress={requestPermission}>
-                                <Text style={styles.text}>{t('requestPermission')}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    }
                 </>
                 </>
             }
@@ -195,8 +195,10 @@ export default Map;
 
 const styles = StyleSheet.create({
     container: {
-        top: '10%',
+        height: 200,
         alignItems: 'center', // Center the camera view horizontally
+        justifyContent: 'center', // Center the camera view vertically
+        marginBottom: 30,
     },
     message: {
         textAlign: 'center',

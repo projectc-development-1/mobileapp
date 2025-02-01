@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Image, Text, TextInput, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Text, TextInput, ScrollView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import React, { useState } from 'react';
 import TakePhotoForProfile from './takePhotoForProfile';
 import commonFunctions from '@/scripts/commonFunctions';
@@ -38,46 +38,48 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                 </TouchableOpacity>
             </View>
             {editProfile && (
-                <ScrollView style={styles.profileContainer}>
-                    <TouchableOpacity style={styles.closeButton} onPress={() => { loadProfilePhoto(); setEditProfile(false); } }>
-                        <Icon name='close' />
-                    </TouchableOpacity>
-                    <View style={{alignItems: 'center', marginTop: 50, marginBottom: 50}}>
-                        <TakePhotoForProfile 
-                            selfAccount={selfAccount} 
-                            iconBody={iconBody}
-                            setEditProfile={setEditProfile} 
-                            loadProfilePhoto={loadProfilePhoto}
-                        />
-                    </View>
-                    <View style={{alignItems: 'center'}}>
-                        <View style={styles.introductionContainer}>
-                            <TextInput
-                                style={[styles.introduction, { fontFamily }]}
-                                onChangeText={setIntroduction}
-                                value={introduction}
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <ScrollView style={styles.profileContainer}>
+                        <TouchableOpacity style={styles.closeButton} onPress={() => { loadProfilePhoto(); setEditProfile(false); } }>
+                            <Icon name='close' />
+                        </TouchableOpacity>
+                        <View style={{alignItems: 'center', marginTop: 50, height: 320}}>
+                            <TakePhotoForProfile 
+                                selfAccount={selfAccount} 
+                                iconBody={iconBody}
+                                setEditProfile={setEditProfile} 
+                                loadProfilePhoto={loadProfilePhoto}
                             />
                         </View>
-                    </View>
-                    <View style={{alignItems: 'center'}}>
-                        <View style={styles.hobbiesContainer}>
-                            <TextInput
-                                style={[styles.hobbies, { fontFamily }]}
-                                onChangeText={setIntroduction}
-                                value={introduction}
-                            />
+                        <View style={{alignItems: 'center'}}>
+                            <View style={styles.introductionContainer}>
+                                <TextInput
+                                    style={[styles.introduction, { fontFamily }]}
+                                    onChangeText={setIntroduction}
+                                    value={introduction}
+                                />
+                            </View>
                         </View>
-                    </View>
-                    <View style={{alignItems: 'center'}}>
-                        <View style={styles.whatAreYouLookingForContainer}>
-                            <TextInput
-                                style={[styles.whatAreYouLookingFor, { fontFamily }]}
-                                onChangeText={setIntroduction}
-                                value={introduction}
-                            />
+                        <View style={{alignItems: 'center'}}>
+                            <View style={styles.hobbiesContainer}>
+                                <TextInput
+                                    style={[styles.hobbies, { fontFamily }]}
+                                    onChangeText={setIntroduction}
+                                    value={introduction}
+                                />
+                            </View>
                         </View>
-                    </View>
-                </ScrollView>
+                        <View style={{alignItems: 'center'}}>
+                            <View style={styles.whatAreYouLookingForContainer}>
+                                <TextInput
+                                    style={[styles.whatAreYouLookingFor, { fontFamily }]}
+                                    onChangeText={setIntroduction}
+                                    value={introduction}
+                                />
+                            </View>
+                        </View>
+                    </ScrollView>
+                </TouchableWithoutFeedback>
             )}
         </>
     )
@@ -119,7 +121,7 @@ const styles = StyleSheet.create({
     introductionContainer: {
         backgroundColor: 'rgb(255, 255, 255)',
         width: '70%',
-        height: '40%',
+        height: '60%',
         borderRadius: 25,
     },
     introduction: {
@@ -129,7 +131,7 @@ const styles = StyleSheet.create({
     hobbiesContainer: {
         backgroundColor: 'rgb(255, 255, 255)',
         width: '70%',
-        height: '40%',
+        height: '60%',
         borderRadius: 25,
     },
     hobbies: {
@@ -139,7 +141,7 @@ const styles = StyleSheet.create({
     whatAreYouLookingForContainer: {
         backgroundColor: 'rgb(255, 255, 255)',
         width: '70%',
-        height: '40%',
+        height: '60%',
         borderRadius: 25,
     },
     whatAreYouLookingFor: {
