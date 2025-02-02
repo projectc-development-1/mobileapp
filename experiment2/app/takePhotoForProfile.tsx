@@ -6,7 +6,7 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-na
 import { useTranslation } from "react-i18next";
 import commonFunctions from '@/scripts/commonFunctions';
 import { Icon } from 'react-native-elements'
-import { manipulateAsync, FlipType, SaveFormat, ImageManipulator } from 'expo-image-manipulator';
+import { manipulateAsync, FlipType } from 'expo-image-manipulator';
 
 
 const { setDataToSecureStore } = commonFunctions();

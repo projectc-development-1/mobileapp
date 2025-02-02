@@ -5,9 +5,9 @@ import { View, StyleSheet, Platform, Alert, TouchableOpacity, Image, Text, Scrol
 import { Map as ImmutableMap } from 'immutable';
 import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { useTranslation } from "react-i18next";
-import RNExitApp from 'react-native-exit-app';
 import commonFunctions from "@/scripts/commonFunctions";
 import TargetAccountChatModal from "./targetAccountChatModal";
+import TargetAccountProfileModal from "./targetAccountProfileModal";
 import { getFontFamily } from "@/i18n";
 import { Icon } from "react-native-elements";
 interface AdvanceLocationObject extends LocationObject {
@@ -228,7 +228,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
     };
 
     let [openToolBox, setOpenToolBox] = useState<boolean>(false);
-    let [openTargetAccountChatModal, setOpenTargetAccountChatModal] = useState<boolean>(false);
+    let [openTargetAccountModalType, setOpenTargetAccountModalType] = useState<number>(0);
     let [targetAccount, setTargetAccount] = useState<{ accountName: string; accountID: string; photoInBase64: string; } | null>(null);
 
     return (
@@ -239,8 +239,12 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                 region={Platform.OS === 'android' ? region : undefined}
                 onPress={() => {
                     if (openToolBox){
-                        if (openTargetAccountChatModal){ setOpenTargetAccountChatModal(false); }
-                        else { setOpenToolBox(false); }
+                        if (openTargetAccountModalType>0){
+                            setOpenTargetAccountModalType(0);
+                        }
+                        else{
+                            setOpenToolBox(false);
+                        }
                     }
                 }}
             >
@@ -259,7 +263,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                         onPress={() => {
                             console.log('Marker pressed');
                             setTargetAccount({ accountName: other_location.accountName, accountID: other_location.accountID, photoInBase64: other_location.photoInBase64 });
-                            setOpenToolBox(true);
+                            setTimeout(() => { setOpenToolBox(true); }, 100);
                         }}
                     >
                         <Image source={require('../assets/images/otherlocation30X30.png')} style={{'display': unreadMsgMap.current.get(other_location.accountID)==undefined?'flex':'none'}} />
@@ -276,10 +280,10 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                     <Image source={{ uri: targetAccount?.photoInBase64 }} style={styles.targetIcon}/>
                 </View>
                 <View style={styles.toolListContainer}>
-                    <TouchableOpacity onPress={() => setOpenTargetAccountChatModal(!openTargetAccountChatModal)} style={{paddingHorizontal: 10}}>
+                    <TouchableOpacity onPress={() => setOpenTargetAccountModalType(1) } style={{paddingHorizontal: 10}}>
                         <Icon name='chat' />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => console.log('Button 2 pressed')} style={{paddingHorizontal: 10}}>
+                    <TouchableOpacity onPress={() => setOpenTargetAccountModalType(2) } style={{paddingHorizontal: 10}}>
                         <Icon name='info' />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => console.log('Button 3 pressed')} style={{paddingHorizontal: 10}}>
@@ -288,12 +292,17 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                 </View>
                 </>
             )}
-            {openTargetAccountChatModal && (
+            {openTargetAccountModalType==1 && (
                 <TargetAccountChatModal 
                     wsSend={wsSend}
                     ws={ws.current} 
                     targetAccount={targetAccount} 
                     selfAccount={selfAccount}
+                />
+            )}
+            {openTargetAccountModalType==2 && (
+                <TargetAccountProfileModal 
+                    targetAccount={targetAccount}
                 />
             )}
         </View>

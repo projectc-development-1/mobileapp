@@ -1,5 +1,5 @@
 import commonFunctions from '@/scripts/commonFunctions';
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, TouchableWithoutFeedback, View, Keyboard, TouchableOpacity, Text } from 'react-native';
 
 const { setDataToSecureStore } = commonFunctions();

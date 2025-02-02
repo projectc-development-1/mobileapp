@@ -2,7 +2,6 @@ import { View, StyleSheet, TouchableOpacity, Image, Text, TextInput, ScrollView,
 import React, { useState } from 'react';
 import TakePhotoForProfile from './takePhotoForProfile';
 import commonFunctions from '@/scripts/commonFunctions';
-import { useFonts } from 'expo-font';
 import { useTranslation } from 'react-i18next';
 import { getFontFamily } from '@/i18n';
 import { Icon } from 'react-native-elements';

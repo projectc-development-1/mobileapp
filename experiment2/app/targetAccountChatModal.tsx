@@ -177,43 +177,43 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
             keyboardVerticalOffset={10}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-                <View>
-                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                        <ScrollView ref={scrollViewRef}>
-                            {messages && messages.map((msg, index) => (
-                                <View key={msg.messageID } style={ msg.from_account_id !== selfAccount?.accountID ? styles.messageContainerForTargetAccount : styles.messageContainerForSelfAccount }>
-                                    <Text style={styles.messageTimestamp}>{new Date(msg.timestamp).toLocaleString()}</Text>
-                                    <Text style={styles.messageText}>{msg.message}</Text>
-                                </View>
-                            ))}
-                        </ScrollView>
-                    </TouchableWithoutFeedback>
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', paddingVertical: 10 }}>
-                        <TextInput
-                            style={[styles.input, { height: Math.max(30, textInputHeight), width: `${textInputWidth}%` }]}
-                            value={tempInputMessage}
-                            onChangeText={setTempInputMessage}
-                            multiline 
-                            onContentSizeChange={(event) => {
-                                if(event.nativeEvent.contentSize.height < 66){
-                                    setTextInputHeight(event.nativeEvent.contentSize.height);
-                                }
-                            }}
-                            onChange={(event) => {
-                                if(event.nativeEvent.text.length > 0){
-                                    setTextInputWidth(75);
-                                }else{
-                                    setTextInputWidth(90);
-                                }
-                            }}
-                        />
-                        {tempInputMessage.length > 0 && (
-                            <TouchableOpacity style={[styles.button]} onPress={sendMsg} disabled={sendButtonDisabled}>
-                                <Icon name='send'/>
-                            </TouchableOpacity>
-                        )}
-                    </View>
+            <View>
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <ScrollView ref={scrollViewRef}>
+                        {messages && messages.map((msg, index) => (
+                            <View key={msg.messageID } style={ msg.from_account_id !== selfAccount?.accountID ? styles.messageContainerForTargetAccount : styles.messageContainerForSelfAccount }>
+                                <Text style={styles.messageTimestamp}>{new Date(msg.timestamp).toLocaleString()}</Text>
+                                <Text style={styles.messageText}>{msg.message}</Text>
+                            </View>
+                        ))}
+                    </ScrollView>
+                </TouchableWithoutFeedback>
+                <View style={{ flexDirection: 'row', justifyContent: 'center', paddingVertical: 10 }}>
+                    <TextInput
+                        style={[styles.input, { height: Math.max(30, textInputHeight), width: `${textInputWidth}%` }]}
+                        value={tempInputMessage}
+                        onChangeText={setTempInputMessage}
+                        multiline 
+                        onContentSizeChange={(event) => {
+                            if(event.nativeEvent.contentSize.height < 66){
+                                setTextInputHeight(event.nativeEvent.contentSize.height);
+                            }
+                        }}
+                        onChange={(event) => {
+                            if(event.nativeEvent.text.length > 0){
+                                setTextInputWidth(75);
+                            }else{
+                                setTextInputWidth(90);
+                            }
+                        }}
+                    />
+                    {tempInputMessage.length > 0 && (
+                        <TouchableOpacity style={[styles.button]} onPress={sendMsg} disabled={sendButtonDisabled}>
+                            <Icon name='send'/>
+                        </TouchableOpacity>
+                    )}
                 </View>
+            </View>
         </KeyboardAvoidingView>
     );
 };
