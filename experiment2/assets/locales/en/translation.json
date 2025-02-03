@@ -8,5 +8,6 @@
     "Bad_network": "Wait...",
     "cameraPermissionRequired": "Please grant camera access permission to continue.",
     "requestPermission": "Request Permission",
-    "save": "Save"
+    "save": "Save",
+    "introduction_placeholder": "write something about yourself"
   }

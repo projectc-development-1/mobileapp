@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { StyleSheet, View, ScrollView, Image, Text } from 'react-native';
-import { TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { getFontFamily } from '@/i18n';
+import commonFunctions from '@/scripts/commonFunctions';
 
 interface MapProps {
     targetAccount: { accountName: string; accountID: string; photoInBase64: string } | null;
@@ -22,10 +22,47 @@ interface Message {
 const Map: React.FC<MapProps> = ({ targetAccount }) => {
     const { t } = useTranslation();
     const fontFamily = getFontFamily();
-
+    const { getDataFromSecureStore, setDataToSecureStore } = commonFunctions();
+    let firstRender = useRef(true);
     const [introduction, setIntroduction] = React.useState('Who are you?');
     const [hobbies, setHobbies] = React.useState('What are your hobbies?');
-    const [whatAreYouLookingFor, setWhatAreYouLookingFor] = React.useState('What are you looking for?');
+
+    async function loadProfileInformation() {
+        let deviceLanguage = await getDataFromSecureStore('language');
+        fetch('https://90912xli63.execute-api.ap-south-1.amazonaws.com/loadData', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "action" : "communication",
+                "data": {
+                    "action": "loadTargetAccountProfile",
+                    "data": {
+                        "accountID": targetAccount?.accountID
+                    }
+                }
+            })
+        })
+        .then(response => response.json())
+        .then(async data => {
+            for (let i = 0; i < data.length; i++) {
+                if(data[i].profileKey == 'introduction'){
+                    setIntroduction(data[i].profileValue);
+                } else if(data[i].profileKey == 'hobbies'){
+                    setHobbies(data[i].profileValue);
+                }
+            }
+        })
+        .catch((error) => {
+            console.error('loadProfileInformation - Error:', error);
+        });
+    }
+
+    if(firstRender.current){
+        loadProfileInformation();
+        firstRender.current = false;
+    }
     
     return (
         <View style={styles.container}>
@@ -45,13 +82,6 @@ const Map: React.FC<MapProps> = ({ targetAccount }) => {
                         <View style={styles.hobbiesContainer}>
                             <Text style={[styles.hobbies, { fontFamily }]}>
                                 {hobbies}
-                            </Text>
-                        </View>
-                    </View>
-                    <View style={{alignItems: 'center'}}>
-                        <View style={styles.whatAreYouLookingForContainer}>
-                            <Text style={[styles.whatAreYouLookingFor, { fontFamily }]} >
-                                {whatAreYouLookingFor}
                             </Text>
                         </View>
                     </View>

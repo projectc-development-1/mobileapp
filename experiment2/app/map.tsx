@@ -116,24 +116,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
             });
         }
 
-        const getOtherLocation = async () => {
-            /*
-                dummyLocations.push(
-                {
-                    coords: {
-                        latitude: 22.370920562114932, 
-                        longitude: 114.08332432234569,
-                        altitude: 14.371987,
-                        accuracy: 13.387766,
-                        altitudeAccuracy: 30,
-                        heading: -1,
-                        speed: -1,
-                    },
-                    timestamp: Date.now(),
-                }
-            );
-            */
-            
+        const getOtherLocation = async () => {            
             fetch('https://8jf471h04j.execute-api.ap-south-1.amazonaws.com/userLocationCommunication', {
                 method: 'POST',
                 headers: {

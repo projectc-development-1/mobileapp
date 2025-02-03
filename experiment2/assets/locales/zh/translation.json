@@ -8,5 +8,6 @@
     "Bad_network": "等等呀。。。",
     "cameraPermissionRequired": "請授權相機存取權限以繼續。",
     "requestPermission": "請求權限",
-    "save": "保存"
+    "save": "保存",
+    "introduction_placeholder": "寫點關於自己的東西"
 }
