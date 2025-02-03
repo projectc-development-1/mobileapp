@@ -83,8 +83,8 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
                                 if (facing === 'front') {
                                     const manipResult = await manipulateAsync(
                                         photo.uri,
-                                        [{ flip: FlipType.Horizontal }],
-                                        { base64: true }
+                                        [{ flip: FlipType.Horizontal }, { resize: { width: 800 } }],
+                                        { base64: true, compress: 0.1 },
                                     );
                                     if(manipResult.base64 != null){
                                         let manipResultInBase64 = (base64Result.substring(0, base64Result.indexOf('base64,'))+ 'base64,') + manipResult.base64;

@@ -93,6 +93,8 @@ https://console.cloud.google.com/google/maps-apis/credentials?authuser=4&hl=zh-t
 
 
 Common command #################################
+npx expo install --fix
+
 expo init [project name]
 npx expo prebuild
 npx expo start

@@ -84,16 +84,15 @@ export default Map;
 
 const styles = StyleSheet.create({
     container: {
-        alignItems: 'center',
+        alignSelf: 'center',
         justifyContent: 'center',
         backgroundColor: 'rgba(255, 255, 255, 0.7)',
         position: 'absolute',
         zIndex: 3,
-        width: '80%',
+        width: 320,
         height: '65%',
         borderRadius: 30,
         top: '8%',
-        left: '10%',
     },
     profileContainer: {
         position: 'absolute',
@@ -123,17 +122,6 @@ const styles = StyleSheet.create({
         marginBottom: 50,
     },
     hobbies: {
-        fontSize: 20,
-        color: 'rgb(0, 0, 0)',
-    },
-    whatAreYouLookingForContainer: {
-        backgroundColor: 'rgb(255, 255, 255)',
-        width: '70%',
-        height: 200,
-        marginBottom: 50,
-        borderRadius: 25,
-    },
-    whatAreYouLookingFor: {
         fontSize: 20,
         color: 'rgb(0, 0, 0)',
     },

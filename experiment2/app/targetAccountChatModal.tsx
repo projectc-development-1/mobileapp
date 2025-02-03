@@ -227,11 +227,11 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         position: 'absolute',
         zIndex: 3,
-        width: '80%',
+        width: 320,
         height: '65%',
         borderRadius: 30,
         top: '8%',
-        left: '10%',
+        alignSelf: 'center',
     },
     input: {
         paddingHorizontal: 10,

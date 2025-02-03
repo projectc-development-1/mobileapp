@@ -102,8 +102,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
         alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0)',
-        left: '31%',
-        top: '75%',
+        alignSelf: 'center',
+        top: '73%',
     },
     targetAccountNameContainer: {
         textAlign: 'center',
@@ -124,9 +124,9 @@ const styles = StyleSheet.create({
     },
     toolListContainer: {
         position: 'absolute',
-        width: '70%',
-        height: '5%',
-        left: '15%',
+        width: 280,
+        height: 45,
+        alignSelf: 'center',
         top: '85%',
         backgroundColor: 'rgba(255, 255, 255, 0.6)',
         padding: 10,
