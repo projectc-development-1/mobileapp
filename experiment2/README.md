@@ -122,3 +122,7 @@ https://louis383.medium.com/%E6%89%8B%E5%8B%95%E5%AE%89%E8%A3%9D-aab-android-app
 Icon reference
 https://oblador.github.io/react-native-vector-icons/     -- MaterialIcons
 https://reactnativeelements.com/docs/1.2.0/icon
+
+
+AWS lambda dynamoDB api 
+https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html

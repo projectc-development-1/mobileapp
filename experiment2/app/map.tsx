@@ -6,10 +6,8 @@ import { Map as ImmutableMap } from 'immutable';
 import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { useTranslation } from "react-i18next";
 import commonFunctions from "@/scripts/commonFunctions";
-import TargetAccountChatModal from "./targetAccountChatModal";
-import TargetAccountProfileModal from "./targetAccountProfileModal";
+import TargetAccountToolList from "./targetAccountToolList";
 import { getFontFamily } from "@/i18n";
-import { Icon } from "react-native-elements";
 interface AdvanceLocationObject extends LocationObject {
     accountName: string;
     accountID: string;
@@ -212,7 +210,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
 
     let [openToolBox, setOpenToolBox] = useState<boolean>(false);
     let [openTargetAccountModalType, setOpenTargetAccountModalType] = useState<number>(0);
-    let [targetAccount, setTargetAccount] = useState<{ accountName: string; accountID: string; photoInBase64: string; } | null>(null);
+    let [targetAccount, setTargetAccount] = useState<{ accountName: string; accountID: string; } | null>(null);
 
     return (
         <View style={styles.container}>
@@ -245,7 +243,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                         coordinate={{latitude: other_location.coords.latitude, longitude: other_location.coords.longitude}}
                         onPress={() => {
                             console.log('Marker pressed');
-                            setTargetAccount({ accountName: other_location.accountName, accountID: other_location.accountID, photoInBase64: other_location.photoInBase64 });
+                            setTargetAccount({ accountName: other_location.accountName, accountID: other_location.accountID});
                             setTimeout(() => { setOpenToolBox(true); }, 100);
                         }}
                     >
@@ -255,37 +253,13 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                 ))}
             </MapView>
             {openToolBox && (
-                <>
-                <View style={styles.targetIconContainer}>
-                    <ScrollView horizontal={true} style={styles.targetAccountNameContainer} >
-                        <Text style={[styles.targetAccountName, { fontFamily }]}>{targetAccount?.accountName}</Text>
-                    </ScrollView>
-                    <Image source={{ uri: targetAccount?.photoInBase64 }} style={styles.targetIcon}/>
-                </View>
-                <View style={styles.toolListContainer}>
-                    <TouchableOpacity onPress={() => setOpenTargetAccountModalType(1) } style={{paddingHorizontal: 10}}>
-                        <Icon name='chat' />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setOpenTargetAccountModalType(2) } style={{paddingHorizontal: 10}}>
-                        <Icon name='info' />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => console.log('Button 3 pressed')} style={{paddingHorizontal: 10}}>
-                        <Icon name='notes' />
-                    </TouchableOpacity>
-                </View>
-                </>
-            )}
-            {openTargetAccountModalType==1 && (
-                <TargetAccountChatModal 
+                <TargetAccountToolList 
                     wsSend={wsSend}
                     ws={ws.current} 
-                    targetAccount={targetAccount} 
                     selfAccount={selfAccount}
-                />
-            )}
-            {openTargetAccountModalType==2 && (
-                <TargetAccountProfileModal 
-                    targetAccount={targetAccount}
+                    targetAccount={targetAccount} 
+                    openTargetAccountModalType={openTargetAccountModalType}
+                    setOpenTargetAccountModalType={setOpenTargetAccountModalType}
                 />
             )}
         </View>
@@ -327,42 +301,6 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 16,
         color: 'rgb(0, 0, 0)',
-    },
-    targetAccountNameContainer: {
-        textAlign: 'center',
-        width: 150,
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-    },
-    targetAccountName: {
-        alignItems: 'center',
-        fontSize: 10,
-        color: 'rgb(0, 0, 0)',
-        marginTop: 10,
-        fontWeight: 'bold',
-    },
-    targetIcon: {
-        width: 50,
-        height: 50,
-        borderRadius: 50,
-    },
-    toolListContainer: {
-        position: 'absolute',
-        width: '70%',
-        height: '5%',
-        left: '15%',
-        top: '85%',
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
-        padding: 10,
-        borderRadius: 100,
-        flexDirection: 'row', 
-        justifyContent: 'space-around'
-    },
-    targetIconContainer: {
-        position: 'absolute',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        left: '31%',
-        top: '75%',
     },
     toolListItem: {
         fontSize: 16,

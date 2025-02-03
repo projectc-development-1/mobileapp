@@ -1,11 +1,13 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { StyleSheet, View, ScrollView, Image, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { getFontFamily } from '@/i18n';
 import commonFunctions from '@/scripts/commonFunctions';
 
 interface MapProps {
-    targetAccount: { accountName: string; accountID: string; photoInBase64: string } | null;
+    introduction: string | null;
+    photoInBase64: string | null;
+    hobbies: Set<{ name: JSON }> | null;
 }
 
 interface Message {
@@ -19,69 +21,56 @@ interface Message {
     read: boolean;
 }
 
-const Map: React.FC<MapProps> = ({ targetAccount }) => {
+const Map: React.FC<MapProps> = ({ introduction, photoInBase64, hobbies }) => {
     const { t } = useTranslation();
     const fontFamily = getFontFamily();
-    const { getDataFromSecureStore, setDataToSecureStore } = commonFunctions();
+    const { getDataFromSecureStore } = commonFunctions();
     let firstRender = useRef(true);
-    const [introduction, setIntroduction] = React.useState('Who are you?');
-    const [hobbies, setHobbies] = React.useState('What are your hobbies?');
+    let [translatedHobbies, setTranslatedHobbies] = useState(new Set());
 
-    async function loadProfileInformation() {
+    async function translateHobbies(hobbies: Set<{ name: JSON }>) {
         let deviceLanguage = await getDataFromSecureStore('language');
-        fetch('https://90912xli63.execute-api.ap-south-1.amazonaws.com/loadData', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                "action" : "communication",
-                "data": {
-                    "action": "loadTargetAccountProfile",
-                    "data": {
-                        "accountID": targetAccount?.accountID
-                    }
-                }
-            })
-        })
-        .then(response => response.json())
-        .then(async data => {
-            for (let i = 0; i < data.length; i++) {
-                if(data[i].profileKey == 'introduction'){
-                    setIntroduction(data[i].profileValue);
-                } else if(data[i].profileKey == 'hobbies'){
-                    setHobbies(data[i].profileValue);
-                }
+        Array.from(hobbies).map((h) => {
+            switch (deviceLanguage) {
+                case 'en':
+                    h.name = h.en;
+                    break;
+                case 'zh':
+                    h.name = h.zh;
+                    break;
             }
-        })
-        .catch((error) => {
-            console.error('loadProfileInformation - Error:', error);
         });
+        setTranslatedHobbies(hobbies);
     }
 
     if(firstRender.current){
-        loadProfileInformation();
-        firstRender.current = false;
+        
+        if(hobbies != null){
+            translateHobbies(hobbies);
+            firstRender.current = false;
+        }
     }
     
     return (
         <View style={styles.container}>
             <View style={styles.profileContainer}>
                 <ScrollView >
-                    <View style={{alignItems: 'center', marginTop: 50, height: 150}}>
-                        <Image source={{ uri: targetAccount?.photoInBase64 }} style={styles.icon}/> 
+                    <View style={{alignItems: 'center', marginTop: 50, height: 200}}>
+                        {photoInBase64 && <Image source={{ uri: photoInBase64 }} style={styles.icon}/>}
                     </View>
                     <View style={{alignItems: 'center'}}>
-                        <View style={styles.introductionContainer}>
+                        <ScrollView style={styles.introductionContainer}>
                             <Text style={[styles.introduction, { fontFamily }]}>
                                 {introduction}
                             </Text>
-                        </View>
+                        </ScrollView>
                     </View>
                     <View style={{alignItems: 'center'}}>
                         <View style={styles.hobbiesContainer}>
-                            <Text style={[styles.hobbies, { fontFamily }]}>
-                                {hobbies}
+                            <Text>
+                            {translatedHobbies && Array.from(translatedHobbies).map((h, index) => (
+                                <Text>#{h.name}    </Text>
+                            ))}
                             </Text>
                         </View>
                     </View>
@@ -113,27 +102,25 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     icon: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        width: 150,
+        height: 150,
+        borderRadius: 75,
     },
     introductionContainer: {
         backgroundColor: 'rgb(255, 255, 255)',
-        width: '70%',
-        height: 200,
+        width: 280,
+        height: 150,
         marginBottom: 50,
         borderRadius: 25,
     },
     introduction: {
-        fontSize: 20,
+        fontSize: 15,
         color: 'rgb(0, 0, 0)',
     },
     hobbiesContainer: {
-        backgroundColor: 'rgb(255, 255, 255)',
-        width: '70%',
-        height: 200,
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        width: 280,
         marginBottom: 50,
-        borderRadius: 25,
     },
     hobbies: {
         fontSize: 20,
