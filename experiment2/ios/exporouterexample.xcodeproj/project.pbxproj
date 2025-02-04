@@ -11,18 +11,18 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		291DC7FFE8FE47ABA1D2AFCD /* Oswald-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FDCE760D634C436CBA7C5A9B /* Oswald-VariableFont_wght.ttf */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		6AB9FA744D81DCA79B513415 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0C3E301DBF49B2BB99DE04C6 /* PrivacyInfo.xcprivacy */; };
 		96905EF65AED1B983A6B3ABC /* libPods-exporouterexample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 58EEBF8E8E6FB1BC6CAF49B5 /* libPods-exporouterexample.a */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
-		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		B65282BCA6AD486180BF8139 /* NotoSansTC-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9E6BD2A7E9CD4BA48F1E02BB /* NotoSansTC-VariableFont_wght.ttf */; };
-		291DC7FFE8FE47ABA1D2AFCD /* Oswald-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FDCE760D634C436CBA7C5A9B /* Oswald-VariableFont_wght.ttf */; };
+		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0C3E301DBF49B2BB99DE04C6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = exporouterexample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* exporouterexample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = exporouterexample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* experiment2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = experiment2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = exporouterexample/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = exporouterexample/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = exporouterexample/Images.xcassets; sourceTree = "<group>"; };
@@ -32,13 +32,13 @@
 		6C2E3173556A471DD304B334 /* Pods-exporouterexample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-exporouterexample.debug.xcconfig"; path = "Target Support Files/Pods-exporouterexample/Pods-exporouterexample.debug.xcconfig"; sourceTree = "<group>"; };
 		7A4D352CD337FB3A3BF06240 /* Pods-exporouterexample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-exporouterexample.release.xcconfig"; path = "Target Support Files/Pods-exporouterexample/Pods-exporouterexample.release.xcconfig"; sourceTree = "<group>"; };
 		7A7384CCEDF7428FA4792B38 /* exporouterexample-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "exporouterexample-Bridging-Header.h"; path = "exporouterexample/exporouterexample-Bridging-Header.h"; sourceTree = "<group>"; };
+		9E6BD2A7E9CD4BA48F1E02BB /* NotoSansTC-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "NotoSansTC-VariableFont_wght.ttf"; path = "../assets/fonts/NotoSansTC-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = exporouterexample/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		C84562CA49034C1294DB190F /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "exporouterexample/noop-file.swift"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-exporouterexample/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		9E6BD2A7E9CD4BA48F1E02BB /* NotoSansTC-VariableFont_wght.ttf */ = {isa = PBXFileReference; name = "NotoSansTC-VariableFont_wght.ttf"; path = "../assets/fonts/NotoSansTC-VariableFont_wght.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		FDCE760D634C436CBA7C5A9B /* Oswald-VariableFont_wght.ttf */ = {isa = PBXFileReference; name = "Oswald-VariableFont_wght.ttf"; path = "../assets/fonts/Oswald-VariableFont_wght.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		FDCE760D634C436CBA7C5A9B /* Oswald-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Oswald-VariableFont_wght.ttf"; path = "../assets/fonts/Oswald-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +68,15 @@
 				0C3E301DBF49B2BB99DE04C6 /* PrivacyInfo.xcprivacy */,
 			);
 			name = exporouterexample;
+			sourceTree = "<group>";
+		};
+		27ABF7616ACF4A20B1D77522 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				9E6BD2A7E9CD4BA48F1E02BB /* NotoSansTC-VariableFont_wght.ttf */,
+				FDCE760D634C436CBA7C5A9B /* Oswald-VariableFont_wght.ttf */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
@@ -105,7 +114,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* exporouterexample.app */,
+				13B07F961A680F5B00A75B9A /* experiment2.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -144,16 +153,6 @@
 			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
-		27ABF7616ACF4A20B1D77522 /* Resources */ = {
-			isa = "PBXGroup";
-			children = (
-				9E6BD2A7E9CD4BA48F1E02BB /* NotoSansTC-VariableFont_wght.ttf */,
-				FDCE760D634C436CBA7C5A9B /* Oswald-VariableFont_wght.ttf */,
-			);
-			name = Resources;
-			sourceTree = "<group>";
-			path = "";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -176,7 +175,7 @@
 			);
 			name = exporouterexample;
 			productName = exporouterexample;
-			productReference = 13B07F961A680F5B00A75B9A /* exporouterexample.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* experiment2.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -392,8 +391,8 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.development.1.experiment2";
-				PRODUCT_NAME = "experiment2";
+				PRODUCT_BUNDLE_IDENTIFIER = com.development.1.experiment2;
+				PRODUCT_NAME = experiment2;
 				SWIFT_OBJC_BRIDGING_HEADER = "exporouterexample/exporouterexample-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -426,8 +425,8 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.development.1.experiment2";
-				PRODUCT_NAME = "experiment2";
+				PRODUCT_BUNDLE_IDENTIFIER = com.development.1.experiment2;
+				PRODUCT_NAME = experiment2;
 				SWIFT_OBJC_BRIDGING_HEADER = "exporouterexample/exporouterexample-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -490,10 +489,7 @@
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -548,10 +544,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

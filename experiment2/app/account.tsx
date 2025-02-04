@@ -156,7 +156,10 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
             <View style={styles.containerInNormal}>
                 <Text style={[styles.accountName, { fontFamily }]}>{selfAccount?.accountName}</Text>
                 <TouchableOpacity onPress={() => setEditProfile(true)}>
-                    <Image source={{ uri: iconBody }} style={styles.icon}/>
+                    {iconBody.length > 0 ?
+                        <Image source={{ uri: iconBody }} style={styles.icon}/> :
+                        <Image source={require('../assets/images/noProfilePhoto.jpg')} style={styles.icon}/>
+                    }
                 </TouchableOpacity>
             </View>
             {editProfile && (
