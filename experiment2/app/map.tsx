@@ -24,8 +24,10 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
     const fontFamily = getFontFamily();
     const {
         getDataFromSecureStore,
+        setDataToSecureStore,
         wsSend,
-        ws
+        ws,
+        sendPendingMessages
     } = commonFunctions();
 
     let selflocation = useRef<LocationObject[]>([]);
@@ -184,6 +186,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                     getSelfLocation();
                     getOtherLocation();
                     updateStatusToOnline();
+                    sendPendingMessages();
                 }, 10000);
             }
         }else{
@@ -191,19 +194,37 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
             getSelfLocation();
             getOtherLocation();
             updateStatusToOnline();
+            sendPendingMessages();
         }
         firstLoad.current = false;
         nextUpdateTime.current = Date.now() + 5000;
     }
 
-    ws.current.onmessage = e => {
-        // a message was received
+    ws.current.onmessage = async e => {
         let eInJson = JSON.parse(e.data);
         if(eInJson.command == 'onlineAndSyncMsg'){
             console.log(eInJson);
             unreadMsgMap.current = ImmutableMap<string, number>();
             for(let i=0; i<eInJson.result.length; i++){
                 unreadMsgMap.current = unreadMsgMap.current.set(eInJson.result[i].from_account_id, parseInt(eInJson.result[i].unreadMsgAmount));
+            }
+        }
+        else if (eInJson.messageID) {
+            let pendingMessage = await getDataFromSecureStore('pendingMessage');
+            if(pendingMessage){
+                let temppendingMessage = JSON.parse(pendingMessage);
+                if(temppendingMessage.length > 0){
+                    let newpPendingMessage = [];    
+                    let eInJson = JSON.parse(e.data);
+                    if (eInJson.messageID) {
+                        for(let i=0; i<temppendingMessage.length; i++){
+                            if(temppendingMessage[i].data.message_id != eInJson.messageID){
+                                newpPendingMessage.push(temppendingMessage[i]);
+                            }
+                        }
+                        await setDataToSecureStore('pendingMessage', JSON.stringify(newpPendingMessage));
+                    }
+                }
             }
         }
     };

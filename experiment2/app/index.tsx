@@ -8,6 +8,7 @@ import SetLanguageModal from './setLanguageModal';
 import Account from './account';
 import '../i18n.ts';
 import React from "react";
+import commonFunctions from "@/scripts/commonFunctions";
 
 export default function App() {
 

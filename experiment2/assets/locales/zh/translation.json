@@ -9,5 +9,7 @@
     "cameraPermissionRequired": "請授權相機存取權限以繼續。",
     "requestPermission": "請求權限",
     "save": "保存",
-    "introduction_placeholder": "寫點關於自己的東西"
+    "introduction_placeholder": "寫點關於自己的東西",
+    "sending": "發送中...",
+    "sent": "已發送"
 }

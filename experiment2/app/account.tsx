@@ -206,15 +206,15 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                         {hobbiesLibrary.map((hobby, index) => (
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 20}}>
                                 <TouchableOpacity onPress={() => updateHobbiesTags('add', hobby[0]) }>
-                                    <Image source={{ uri: iconBody }} style={styles.hobbiesIcon} />
+                                    <Image source={require('../assets/images/noProfilePhoto.jpg')} style={styles.hobbiesIcon} />
                                     <Text style={[styles.hobbies, { fontFamily }]}>{hobby[0].name}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => updateHobbiesTags('add', hobby[1]) }>
-                                    <Image source={{ uri: iconBody }} style={styles.hobbiesIcon} />
+                                    <Image source={require('../assets/images/noProfilePhoto.jpg')} style={styles.hobbiesIcon} />
                                     <Text style={[styles.hobbies, { fontFamily }]}>{hobby[1].name}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => updateHobbiesTags('add', hobby[2]) }>
-                                    <Image source={{ uri: iconBody }} style={styles.hobbiesIcon} />
+                                    <Image source={require('../assets/images/noProfilePhoto.jpg')} style={styles.hobbiesIcon} />
                                     <Text style={[styles.hobbies, { fontFamily }]}>{hobby[2].name}</Text>
                                 </TouchableOpacity>
                             </View>

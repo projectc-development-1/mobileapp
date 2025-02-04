@@ -9,5 +9,7 @@
     "cameraPermissionRequired": "Please grant camera access permission to continue.",
     "requestPermission": "Request Permission",
     "save": "Save",
-    "introduction_placeholder": "write something about yourself"
+    "introduction_placeholder": "write something about yourself",
+    "sending": "Sending...",
+    "sent": "Sent"
   }

@@ -4,6 +4,8 @@ import uuid from 'react-native-uuid';
 import { TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Icon } from 'react-native-elements';
+import commonFunctions from '@/scripts/commonFunctions';
+import { get } from 'immutable';
 
 interface MapProps {
     wsSend: (data: string) => void;
@@ -21,20 +23,21 @@ interface Message {
     message: string;
     timestamp: number;
     read: boolean;
+    sent: boolean;
 }
 
 const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => {
     const { t } = useTranslation();
+    const { getDataFromSecureStore, setDataToSecureStore, removeDataFromSecureStore } = commonFunctions();
     const [textInputHeight, setTextInputHeight] = useState(0);
     const [textInputWidth, setTextInputWidth] = useState(90);
     const [messages, setMessages] = useState<Message[]>([]);
     let loadHistoryMessages = useRef<boolean>(true);
-    let [sendButtonDisabled, setSendButtonDisabled] = useState<boolean>(true);
+    let loadHistoryMessagesDone = useRef<boolean>(false);
     const [tempInputMessage, setTempInputMessage] = useState<string>('');
     const scrollViewRef = useRef<ScrollView>(null);
     
     if(loadHistoryMessages.current){
-        setSendButtonDisabled(true);
         console.log('loading history messages');
         wsSend(
             JSON.stringify({
@@ -50,20 +53,43 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         loadHistoryMessages.current = false
     } 
 
-    const sendMsg = () => {
-        let tempSendMsg = {
-            "action" : "communication",
-            "data": {
-                "message_id": uuid.v4(),
-                "from_account_id": selfAccount?.accountID,
-                "from_account_name": selfAccount?.accountName,
-                "to_account_id": targetAccount?.accountID,
-                "to_account_name": targetAccount?.accountName,
-                "message": tempInputMessage,
-                "timestamp": Date.now().toString()
+    const storePendingMessage = async (tempSendMsg: {}) => {
+        let pendingMessage = await getDataFromSecureStore('pendingMessage');
+        let temppendingMessage = [];
+        if(pendingMessage){
+            temppendingMessage = JSON.parse(pendingMessage);
+            temppendingMessage.push(tempSendMsg);
+        } else {
+            temppendingMessage.push(tempSendMsg);
+        }
+        setDataToSecureStore('pendingMessage', JSON.stringify(temppendingMessage));
+    }
+
+    const sendMsg = async (msg: {}) => {
+        let tempSendMsg = {};
+        if(Object.keys(msg).length !== 0){
+            tempSendMsg = msg
+        } else{
+            tempSendMsg = {
+                "action" : "communication",
+                "data": {
+                    "message_id": uuid.v4(),
+                    "from_account_id": selfAccount?.accountID,
+                    "from_account_name": selfAccount?.accountName,
+                    "to_account_id": targetAccount?.accountID,
+                    "to_account_name": targetAccount?.accountName,
+                    "message": tempInputMessage,
+                    "timestamp": Date.now().toString()
+                }
             }
         }
-        wsSend( JSON.stringify(tempSendMsg) )
+        
+        if(loadHistoryMessagesDone.current){
+            wsSend( JSON.stringify(tempSendMsg) )
+        }
+        else{
+            storePendingMessage(tempSendMsg);
+        }
         setTempInputMessage('');
         setTextInputWidth(90);
         setMessages(prevMessages => [
@@ -76,17 +102,19 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                 to_account_name: tempSendMsg.data.to_account_name || '',
                 message: tempSendMsg.data.message || '',
                 timestamp: parseInt(tempSendMsg.data.timestamp),
-                read: true
+                read: true,
+                sent: false
             }
         ]);
         scrollViewRef.current?.scrollToEnd({ animated: true });
     };
 
-    ws.onmessage = e => {
+    ws.onmessage = async e => {
         // a message was received
         let eInJson = JSON.parse(e.data);
         if(eInJson.command == 'loadHistoryMessages'){
             console.log('received history messages');
+            loadHistoryMessagesDone.current = true;
             let unread_message_ids_timestamp = [];
             for(let i=0; i<eInJson.result.length; i++){
                 setMessages(prevMessages => [
@@ -99,7 +127,8 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                         to_account_name: Object(eInJson.result[i].to_account_name).S,
                         message: Object(eInJson.result[i].message).S,
                         timestamp: parseInt(Object(eInJson.result[i].timestamp).N),
-                        read: Object(eInJson.result[i].read).BOOL
+                        read: Object(eInJson.result[i].read).BOOL,
+                        sent: Object(eInJson.result[i].sent).BOOL,
                     }
                 ]);
                 if(Object(eInJson.result[i].read).BOOL == false && Object(eInJson.result[i].to_account_id).S == selfAccount?.accountID){
@@ -123,10 +152,17 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                 )
             }
             setMessages(prevMessages => [...prevMessages].sort((a, b) => a.timestamp - b.timestamp));
-            setSendButtonDisabled(false);
             setTimeout(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, 300);
         }
         else if (eInJson.messageID) {
+            if(eInJson.from_account_id == selfAccount?.accountID){
+                for(let i=0; i<messages.length; i++){
+                    if(messages[i].messageID == eInJson.messageID){
+                        messages[i].sent = true;
+                        break;
+                    }
+                }
+            }
             if(eInJson.from_account_id != selfAccount?.accountID && eInJson.from_account_id == targetAccount?.accountID){
                 setMessages(prevMessages => [
                     ...prevMessages,
@@ -138,7 +174,8 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                         to_account_name: eInJson.to_account_name,
                         message: eInJson.message,
                         timestamp: parseInt(eInJson.timestamp),
-                        read: eInJson.read
+                        read: eInJson.read,
+                        sent: true
                     }
                 ]);
                 setMessages(prevMessages => [...prevMessages].sort((a, b) => a.timestamp - b.timestamp));
@@ -184,6 +221,8 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                             <View key={msg.messageID } style={ msg.from_account_id !== selfAccount?.accountID ? styles.messageContainerForTargetAccount : styles.messageContainerForSelfAccount }>
                                 <Text style={styles.messageTimestamp}>{new Date(msg.timestamp).toLocaleString()}</Text>
                                 <Text style={styles.messageText}>{msg.message}</Text>
+                                {!msg.sent && <Text style={styles.messageSendStatus}>{t('sending')}</Text>}
+                                {msg.sent && <Text style={styles.messageSendStatus}>{t('sent')}</Text>}
                             </View>
                         ))}
                     </ScrollView>
@@ -208,7 +247,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                         }}
                     />
                     {tempInputMessage.length > 0 && (
-                        <TouchableOpacity style={[styles.button]} onPress={sendMsg} disabled={sendButtonDisabled}>
+                        <TouchableOpacity style={[styles.button]} onPress={() => sendMsg({})}>
                             <Icon name='send'/>
                         </TouchableOpacity>
                     )}
@@ -274,6 +313,11 @@ const styles = StyleSheet.create({
         fontSize: 10,
         color: 'rgb(121, 121, 121)',
         marginBottom: 5,
+    },
+    messageSendStatus: {
+        fontSize: 10,
+        color: 'rgb(121, 121, 121)',
+        textAlign: 'right',
     },
     messageText: {
         fontSize: 16,

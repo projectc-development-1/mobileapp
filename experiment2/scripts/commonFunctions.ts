@@ -36,6 +36,14 @@ export default function CommonFunctions() {
         }
     };
 
+    const removeDataFromSecureStore = async (key: string) => {
+        try {
+            await SecureStore.deleteItemAsync(key);
+        } catch (e) {
+            console.error('Failed to remove data', e);
+        }
+    };
+
     const getDataFromAsyncStore = async (key: string) => {
         try {
             let tempStoredValue = (await AsyncStorage.getItem(key));
@@ -61,13 +69,25 @@ export default function CommonFunctions() {
         }
     }
 
+    const sendPendingMessages = async () => {
+        let pendingMessage = await getDataFromSecureStore('pendingMessage');
+        if(pendingMessage){
+            let temppendingMessage = JSON.parse(pendingMessage);
+            for(let i=0; i<temppendingMessage.length; i++){
+                wsSend( JSON.stringify(temppendingMessage[i]) );
+            }
+        }
+    }
+
     return {
         languageSwitcher,
         setDataToSecureStore,
         setDataToAsyncStore,
         getDataFromSecureStore,
         getDataFromAsyncStore,
+        removeDataFromSecureStore,
         wsSend,
-        ws
+        ws,
+        sendPendingMessages
     };
 }
