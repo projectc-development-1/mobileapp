@@ -42,6 +42,12 @@
         {
           "fonts": ["./assets/fonts/NotoSansTC-VariableFont_wght.ttf", "./assets/fonts/Oswald-VariableFont_wght.ttf"]
         }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        }
       ]
     ]
   }

@@ -86,6 +86,8 @@ expo install expo-font
 expo install react-native-elements
 expo install expo-image-manipulator
 expo install expo-image-picker
+expo install expo-av
+
 
 
 Google API kys #################################

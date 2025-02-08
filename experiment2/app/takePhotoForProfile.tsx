@@ -146,7 +146,6 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
             }
             {!loading &&
                 <>
-                <>
                     {!editPhoto &&
                         <Image source={{ uri: photoInBase64.current }} style={styles.icon}/> 
                     }
@@ -184,7 +183,6 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
                             </TouchableOpacity>
                         }
                     </View>
-                </>
                 </>
             }
         </>

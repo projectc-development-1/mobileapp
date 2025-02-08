@@ -1,11 +1,15 @@
 import React, { useRef, useState } from 'react';
-import { StyleSheet, TouchableWithoutFeedback, View, Keyboard, TouchableOpacity, Text, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import { StyleSheet, TouchableWithoutFeedback, View, Keyboard, TouchableOpacity, Text, KeyboardAvoidingView, Platform, ScrollView, Image, Alert } from 'react-native';
 import uuid from 'react-native-uuid';
 import { TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Icon } from 'react-native-elements';
 import commonFunctions from '@/scripts/commonFunctions';
-import { get } from 'immutable';
+import TargetAccountChatTakePhoto from './targetAccountChatTakePhoto';
+import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
+import { Link, useRouter } from 'expo-router';
+
 
 interface MapProps {
     wsSend: (data: string) => void;
@@ -29,13 +33,17 @@ interface Message {
 const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => {
     const { t } = useTranslation();
     const { getDataFromSecureStore, setDataToSecureStore, removeDataFromSecureStore } = commonFunctions();
+    const router = useRouter();
     const [textInputHeight, setTextInputHeight] = useState(0);
-    const [textInputWidth, setTextInputWidth] = useState(90);
+    const [textInputWidth, setTextInputWidth] = useState(70);
     const [messages, setMessages] = useState<Message[]>([]);
     let loadHistoryMessages = useRef<boolean>(true);
     let loadHistoryMessagesDone = useRef<boolean>(false);
     const [tempInputMessage, setTempInputMessage] = useState<string>('');
     const scrollViewRef = useRef<ScrollView>(null);
+    const [permissionResponse, requestPermission] = Audio.usePermissions();
+    const [recording, setRecording] = useState<Audio.Recording | undefined>(undefined);
+    const [recordingURI, setRecordingURI] = useState('');
     
     if(loadHistoryMessages.current){
         console.log('loading history messages');
@@ -52,6 +60,47 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         )
         loadHistoryMessages.current = false
     } 
+
+    const audioRecording = async (isRecording: boolean) => {
+        if (!permissionResponse || permissionResponse.status !== 'granted') {
+            Alert.alert('Permission to access microphone was denied');
+        }else{
+            if(isRecording){
+                if (recording) { await recording.stopAndUnloadAsync(); }
+                await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+                if (recording) {
+                    const uri = recording.getURI();
+                    if (uri) {
+                        setRecordingURI(uri);
+                        playRecording(uri);
+                    }
+                }
+                setRecording(undefined);
+            } else{
+                await Audio.setAudioModeAsync({
+                    allowsRecordingIOS: true,
+                    playsInSilentModeIOS: true,
+                });
+                const { recording } = await Audio.Recording.createAsync( Audio.RecordingOptionsPresets.HIGH_QUALITY);
+                setRecording(recording);
+            }
+        }
+    }
+
+    const playRecording = async (recordingURI: string) => {
+        const { sound } = await Audio.Sound.createAsync({ uri: recordingURI });
+        if (sound) { 
+            await sound.playAsync(); 
+        }
+    }
+
+    const deleteRecording = async () => {
+        if (recording) {
+            await recording.stopAndUnloadAsync();
+        }
+        setRecordingURI('');
+        setRecording(undefined);
+    }
 
     const storePendingMessage = async (tempSendMsg: {}) => {
         let pendingMessage = await getDataFromSecureStore('pendingMessage');
@@ -91,7 +140,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
             storePendingMessage(tempSendMsg);
         }
         setTempInputMessage('');
-        setTextInputWidth(90);
+        setTextInputWidth(60);
         setMessages(prevMessages => [
             ...prevMessages,
             {
@@ -108,6 +157,29 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         ]);
         scrollViewRef.current?.scrollToEnd({ animated: true });
     };
+
+    const sendRecordingMsg = async () => {
+        //get the file detail from the recordingURI
+        let recordingDetails = await FileSystem.getInfoAsync(recordingURI);
+        console.log('recordingDetails:', recordingDetails);
+        //convert the recording to base64
+        let recordingBase64 = await FileSystem.readAsStringAsync(recordingURI, { encoding: FileSystem.EncodingType.Base64 });
+        /*
+        sendMsg(
+            {
+            "action" : "communication",
+            "data": {
+                "message_id": uuid.v4(),
+                "from_account_id": selfAccount?.accountID,
+                "from_account_name": selfAccount?.accountName,
+                "to_account_id": targetAccount?.accountID,
+                "to_account_name": targetAccount?.accountName,
+                "message": recordingBase64,
+                "timestamp": Date.now().toString()
+            }
+        );
+        */
+    }
 
     ws.onmessage = async e => {
         // a message was received
@@ -196,18 +268,6 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         }
     };
 
-    ws.onerror = e => {
-    // an error occurred
-    console.log('websocket error', (e as WebSocketErrorEvent).message);
-    };
-
-    ws.onclose = e => {
-    // connection closed
-    console.log(e.code, e.reason);
-    };
-
-
-
     return (
         <KeyboardAvoidingView
             style={styles.container}
@@ -228,6 +288,12 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                     </ScrollView>
                 </TouchableWithoutFeedback>
                 <View style={{ flexDirection: 'row', justifyContent: 'center', paddingVertical: 10 }}>
+                    {recording ? 
+                    <Text></Text> : 
+                    recordingURI.length > 0 ?
+                    <TouchableOpacity style={[styles.playrecordingButton]} onPress={() => playRecording(recordingURI)}>
+                        <Icon name='play-arrow'/>
+                    </TouchableOpacity> :
                     <TextInput
                         style={[styles.input, { height: Math.max(30, textInputHeight), width: `${textInputWidth}%` }]}
                         value={tempInputMessage}
@@ -240,17 +306,50 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                         }}
                         onChange={(event) => {
                             if(event.nativeEvent.text.length > 0){
-                                setTextInputWidth(75);
+                                setTextInputWidth(60);
                             }else{
-                                setTextInputWidth(90);
+                                setTextInputWidth(80);
                             }
                         }}
                     />
-                    {tempInputMessage.length > 0 && (
-                        <TouchableOpacity style={[styles.button]} onPress={() => sendMsg({})}>
-                            <Icon name='send'/>
-                        </TouchableOpacity>
-                    )}
+                    }
+
+                    {recordingURI.length > 0 && 
+                    <TouchableOpacity style={[styles.button]} onPress={deleteRecording}>
+                        <Icon name='delete'/>
+                    </TouchableOpacity>
+                    }
+
+                    {recordingURI.length == 0 &&
+                    <TouchableOpacity style={[styles.button]} onPress={() => audioRecording(!!recording)}>
+                    {recording ? 
+                        <Icon name='mic-none'/> : 
+                        <Icon name='mic'/>
+                    }
+                    </TouchableOpacity>
+                    }
+
+                    {!recording &&
+                    <TouchableOpacity style={[styles.button]} onPress={() => {
+                        router.setParams({ targetAccount: JSON.stringify(targetAccount), selfAccount: JSON.stringify(selfAccount) });
+                        router.push('/targetAccountChatTakePhoto')
+                    }}>
+                        <Icon name='camera-alt'/>
+                    </TouchableOpacity>
+                    }
+                    
+
+                    { !recording && recordingURI.length > 0 &&
+                    <TouchableOpacity style={[styles.button]} onPress={sendRecordingMsg}>
+                        <Icon name='send'/>
+                    </TouchableOpacity> 
+                    }
+                    { !recording && recordingURI.length == 0  && tempInputMessage.length > 0 &&
+                    <TouchableOpacity style={[styles.button]} onPress={sendMsg}>
+                        <Icon name='send'/>
+                    </TouchableOpacity>
+                    }
+
                 </View>
             </View>
         </KeyboardAvoidingView>
@@ -282,14 +381,26 @@ const styles = StyleSheet.create({
         fontSize: 15,
         textAlign: 'left',
     },
+    playrecordingButton: {
+        paddingHorizontal: 10,
+        borderWidth: 1,
+        borderColor: 'rgb(204, 204, 204)',
+        borderRadius: 10,
+        backgroundColor: 'rgb(255, 255, 255)',
+        marginRight: 10,
+        fontSize: 15,
+        textAlign: 'left',
+        width: '60%',
+    },
     button: {
-        width: '15%',        
+        width: 30,        
         borderWidth: 1,
         borderColor: 'rgb(204, 204, 204)',
         borderRadius: 50,
-        backgroundColor: 'rgb(231, 76, 60)',
+        backgroundColor: 'rgb(255, 109, 109)',
         alignItems: 'center',
         justifyContent: 'center',
+        marginRight: 4,
     },
     buttonText: {
         color: 'rgb(0, 0, 0)',
