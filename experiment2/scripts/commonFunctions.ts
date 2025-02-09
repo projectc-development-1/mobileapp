@@ -3,9 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18next from 'i18next';
 import { useRef } from 'react';
 
-export default function CommonFunctions() {
+let ws = useRef<WebSocket>(new WebSocket('wss://o8e86zvvfl.execute-api.ap-south-1.amazonaws.com/development/'));
 
-    let ws = useRef<WebSocket>(new WebSocket('wss://o8e86zvvfl.execute-api.ap-south-1.amazonaws.com/development/'));
+export default function CommonFunctions() {
 
     ws.current.onopen = () => {
         console.log('Connected to server');
@@ -59,18 +59,35 @@ export default function CommonFunctions() {
     };
 
     const wsSend = (data: string) => {
-        if(ws.current.readyState == ws.current.OPEN){
-            console.log('Sending data to server:', data);
-            ws.current.send(data);
-        }
-        else{
-            console.error('Connection to server is closed');
-            ws.current = new WebSocket('wss://o8e86zvvfl.execute-api.ap-south-1.amazonaws.com/development/');
+        try{
+            if(ws.current.readyState == ws.current.OPEN){
+                console.log('Sending data to server:', data.substring(0, 1000));
+                ws.current.send(data);
+            }
+            else{
+                console.error('Connection to server is ', ws.current.readyState);
+                ws.current = new WebSocket('wss://o8e86zvvfl.execute-api.ap-south-1.amazonaws.com/development/');
+            }
+        } catch (e) {
+            console.error('Failed to send data to server', e);
         }
     }
 
+    const storePendingMessage = async (tempSendMsg: {}) => {
+        let pendingMessage = await getDataFromAsyncStore('pendingMessage');
+        let temppendingMessage = [];
+        if(pendingMessage){
+            temppendingMessage = JSON.parse(pendingMessage);
+            temppendingMessage.push(tempSendMsg);
+        } else {
+            temppendingMessage.push(tempSendMsg);
+        }
+        setDataToAsyncStore('pendingMessage', JSON.stringify(temppendingMessage));
+    }
+
     const sendPendingMessages = async () => {
-        let pendingMessage = await getDataFromSecureStore('pendingMessage');
+        let pendingMessage = await getDataFromAsyncStore('pendingMessage');
+        //await setDataToAsyncStore('pendingMessage', '[]');
         if(pendingMessage){
             let temppendingMessage = JSON.parse(pendingMessage);
             for(let i=0; i<temppendingMessage.length; i++){
@@ -88,6 +105,7 @@ export default function CommonFunctions() {
         removeDataFromSecureStore,
         wsSend,
         ws,
+        storePendingMessage,
         sendPendingMessages
     };
 }

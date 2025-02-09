@@ -25,6 +25,8 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
     const {
         getDataFromSecureStore,
         setDataToSecureStore,
+        getDataFromAsyncStore,
+        setDataToAsyncStore,
         wsSend,
         ws,
         sendPendingMessages
@@ -203,14 +205,13 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
     ws.current.onmessage = async e => {
         let eInJson = JSON.parse(e.data);
         if(eInJson.command == 'onlineAndSyncMsg'){
-            console.log(eInJson);
             unreadMsgMap.current = ImmutableMap<string, number>();
             for(let i=0; i<eInJson.result.length; i++){
                 unreadMsgMap.current = unreadMsgMap.current.set(eInJson.result[i].from_account_id, parseInt(eInJson.result[i].unreadMsgAmount));
             }
         }
         else if (eInJson.messageID) {
-            let pendingMessage = await getDataFromSecureStore('pendingMessage');
+            let pendingMessage = await getDataFromAsyncStore('pendingMessage');
             if(pendingMessage){
                 let temppendingMessage = JSON.parse(pendingMessage);
                 if(temppendingMessage.length > 0){
@@ -222,7 +223,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                                 newpPendingMessage.push(temppendingMessage[i]);
                             }
                         }
-                        await setDataToSecureStore('pendingMessage', JSON.stringify(newpPendingMessage));
+                        await setDataToAsyncStore('pendingMessage', JSON.stringify(newpPendingMessage));
                     }
                 }
             }

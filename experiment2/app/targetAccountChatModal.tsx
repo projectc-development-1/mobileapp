@@ -8,7 +8,6 @@ import commonFunctions from '@/scripts/commonFunctions';
 import TargetAccountChatTakePhoto from './targetAccountChatTakePhoto';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
-import { Link, useRouter } from 'expo-router';
 
 
 interface MapProps {
@@ -25,6 +24,7 @@ interface Message {
     to_account_id: string;
     to_account_name: string;
     message: string;
+    msgtype: string;
     timestamp: number;
     read: boolean;
     sent: boolean;
@@ -32,8 +32,7 @@ interface Message {
 
 const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => {
     const { t } = useTranslation();
-    const { getDataFromSecureStore, setDataToSecureStore, removeDataFromSecureStore } = commonFunctions();
-    const router = useRouter();
+    const { storePendingMessage } = commonFunctions();
     const [textInputHeight, setTextInputHeight] = useState(0);
     const [textInputWidth, setTextInputWidth] = useState(70);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -44,20 +43,73 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
     const [permissionResponse, requestPermission] = Audio.usePermissions();
     const [recording, setRecording] = useState<Audio.Recording | undefined>(undefined);
     const [recordingURI, setRecordingURI] = useState('');
+    const [takePhoto, setTakePhoto] = useState(false);
     
     if(loadHistoryMessages.current){
         console.log('loading history messages');
-        wsSend(
-            JSON.stringify({
+        fetch('https://90912xli63.execute-api.ap-south-1.amazonaws.com/loadData', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
                 "action" : "communication",
                 "data": {
-                    "from_account_id": selfAccount?.accountID,
-                    "to_account_id": targetAccount?.accountID,
-                    "command": "loadHistoryMessages",
-                    "timestamp": Date.now().toString()
+                    "action": "loadHistoryMessages",
+                    "data": {
+                        "from_account_id": selfAccount?.accountID,
+                        "to_account_id": targetAccount?.accountID
+                    }
                 }
             })
-        )
+        })
+        .then(response => response.json())
+        .then(async eInJson => {
+            loadHistoryMessagesDone.current = true;
+            let unread_message_ids_timestamp = [];
+            for(let i=0; i<eInJson.result.length; i++){
+                setMessages(prevMessages => [
+                    ...prevMessages,
+                    {
+                        messageID: Object(eInJson.result[i].messageID).S,
+                        from_account_id: Object(eInJson.result[i].from_account_id).S,
+                        from_account_name: Object(eInJson.result[i].from_account_name).S,
+                        to_account_id: Object(eInJson.result[i].to_account_id).S,
+                        to_account_name: Object(eInJson.result[i].to_account_name).S,
+                        message: Object(eInJson.result[i].message).S,
+                        msgtype: Object(eInJson.result[i].msgtype).S,
+                        timestamp: parseInt(Object(eInJson.result[i].timestamp).N),
+                        read: Object(eInJson.result[i].read).BOOL,
+                        sent: Object(eInJson.result[i].sent).BOOL,
+                    }
+                ]);
+                if(Object(eInJson.result[i].read).BOOL == false && Object(eInJson.result[i].to_account_id).S == selfAccount?.accountID){
+                    unread_message_ids_timestamp.push({
+                        messageID: Object(eInJson.result[i].messageID).S,
+                        timestamp: parseInt(Object(eInJson.result[i].timestamp).N)
+                    });
+                }
+            }
+            if(unread_message_ids_timestamp.length > 0){
+                wsSend(
+                    JSON.stringify({
+                        "action" : "communication",
+                        "data": {
+                            "message_ids_timestamps": unread_message_ids_timestamp,
+                            "from_account_id": selfAccount?.accountID,
+                            "to_account_id": targetAccount?.accountID,
+                            "command": "readAll"
+                        }
+                    })
+                )
+            }
+            setMessages(prevMessages => [...prevMessages].sort((a, b) => a.timestamp - b.timestamp));
+            setTimeout(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, 300);
+        })
+        .catch((error) => {
+            console.error('loadHobbiesLibrary - Error:', error);
+        });
+
         loadHistoryMessages.current = false
     } 
 
@@ -102,45 +154,19 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         setRecording(undefined);
     }
 
-    const storePendingMessage = async (tempSendMsg: {}) => {
-        let pendingMessage = await getDataFromSecureStore('pendingMessage');
-        let temppendingMessage = [];
-        if(pendingMessage){
-            temppendingMessage = JSON.parse(pendingMessage);
-            temppendingMessage.push(tempSendMsg);
-        } else {
-            temppendingMessage.push(tempSendMsg);
-        }
-        setDataToSecureStore('pendingMessage', JSON.stringify(temppendingMessage));
-    }
-
     const sendMsg = async (msg: {}) => {
-        let tempSendMsg = {};
-        if(Object.keys(msg).length !== 0){
-            tempSendMsg = msg
-        } else{
-            tempSendMsg = {
-                "action" : "communication",
-                "data": {
-                    "message_id": uuid.v4(),
-                    "from_account_id": selfAccount?.accountID,
-                    "from_account_name": selfAccount?.accountName,
-                    "to_account_id": targetAccount?.accountID,
-                    "to_account_name": targetAccount?.accountName,
-                    "message": tempInputMessage,
-                    "timestamp": Date.now().toString()
-                }
-            }
-        }
-        
+        let tempSendMsg = msg;
         if(loadHistoryMessagesDone.current){
             wsSend( JSON.stringify(tempSendMsg) )
         }
         else{
             storePendingMessage(tempSendMsg);
         }
+    };
+
+    const setMsg = async (tempSendMsg: {}) => {
         setTempInputMessage('');
-        setTextInputWidth(60);
+        setTextInputWidth(70);
         setMessages(prevMessages => [
             ...prevMessages,
             {
@@ -150,13 +176,14 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                 to_account_id: tempSendMsg.data.to_account_id || '',
                 to_account_name: tempSendMsg.data.to_account_name || '',
                 message: tempSendMsg.data.message || '',
+                msgtype: tempSendMsg.data.msgtype || '',
                 timestamp: parseInt(tempSendMsg.data.timestamp),
                 read: true,
                 sent: false
             }
         ]);
         scrollViewRef.current?.scrollToEnd({ animated: true });
-    };
+    }
 
     const sendRecordingMsg = async () => {
         //get the file detail from the recordingURI
@@ -167,15 +194,17 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         /*
         sendMsg(
             {
-            "action" : "communication",
-            "data": {
-                "message_id": uuid.v4(),
-                "from_account_id": selfAccount?.accountID,
-                "from_account_name": selfAccount?.accountName,
-                "to_account_id": targetAccount?.accountID,
-                "to_account_name": targetAccount?.accountName,
-                "message": recordingBase64,
-                "timestamp": Date.now().toString()
+                "action" : "communication",
+                "data": {
+                    "message_id": uuid.v4(),
+                    "from_account_id": selfAccount?.accountID,
+                    "from_account_name": selfAccount?.accountName,
+                    "to_account_id": targetAccount?.accountID,
+                    "to_account_name": targetAccount?.accountName,
+                    "message": recordingBase64,
+                    "msgtype": "audio",
+                    "timestamp": Date.now().toString()
+                }
             }
         );
         */
@@ -184,49 +213,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
     ws.onmessage = async e => {
         // a message was received
         let eInJson = JSON.parse(e.data);
-        if(eInJson.command == 'loadHistoryMessages'){
-            console.log('received history messages');
-            loadHistoryMessagesDone.current = true;
-            let unread_message_ids_timestamp = [];
-            for(let i=0; i<eInJson.result.length; i++){
-                setMessages(prevMessages => [
-                    ...prevMessages,
-                    {
-                        messageID: Object(eInJson.result[i].messageID).S,
-                        from_account_id: Object(eInJson.result[i].from_account_id).S,
-                        from_account_name: Object(eInJson.result[i].from_account_name).S,
-                        to_account_id: Object(eInJson.result[i].to_account_id).S,
-                        to_account_name: Object(eInJson.result[i].to_account_name).S,
-                        message: Object(eInJson.result[i].message).S,
-                        timestamp: parseInt(Object(eInJson.result[i].timestamp).N),
-                        read: Object(eInJson.result[i].read).BOOL,
-                        sent: Object(eInJson.result[i].sent).BOOL,
-                    }
-                ]);
-                if(Object(eInJson.result[i].read).BOOL == false && Object(eInJson.result[i].to_account_id).S == selfAccount?.accountID){
-                    unread_message_ids_timestamp.push({
-                        messageID: Object(eInJson.result[i].messageID).S,
-                        timestamp: parseInt(Object(eInJson.result[i].timestamp).N)
-                    });
-                }
-            }
-            if(unread_message_ids_timestamp.length > 0){
-                wsSend(
-                    JSON.stringify({
-                        "action" : "communication",
-                        "data": {
-                            "message_ids_timestamps": unread_message_ids_timestamp,
-                            "from_account_id": selfAccount?.accountID,
-                            "to_account_id": targetAccount?.accountID,
-                            "command": "readAll"
-                        }
-                    })
-                )
-            }
-            setMessages(prevMessages => [...prevMessages].sort((a, b) => a.timestamp - b.timestamp));
-            setTimeout(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, 300);
-        }
-        else if (eInJson.messageID) {
+        if (eInJson.messageID) {
             if(eInJson.from_account_id == selfAccount?.accountID){
                 for(let i=0; i<messages.length; i++){
                     if(messages[i].messageID == eInJson.messageID){
@@ -245,6 +232,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                         to_account_id: eInJson.to_account_id,
                         to_account_name: eInJson.to_account_name,
                         message: eInJson.message,
+                        msgtype: eInJson.msgtype,
                         timestamp: parseInt(eInJson.timestamp),
                         read: eInJson.read,
                         sent: true
@@ -269,6 +257,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
     };
 
     return (
+        <>
         <KeyboardAvoidingView
             style={styles.container}
             keyboardVerticalOffset={10}
@@ -280,7 +269,8 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                         {messages && messages.map((msg, index) => (
                             <View key={msg.messageID } style={ msg.from_account_id !== selfAccount?.accountID ? styles.messageContainerForTargetAccount : styles.messageContainerForSelfAccount }>
                                 <Text style={styles.messageTimestamp}>{new Date(msg.timestamp).toLocaleString()}</Text>
-                                <Text style={styles.messageText}>{msg.message}</Text>
+                                {msg.msgtype == 'text' && <Text style={styles.messageText}>{msg.message}</Text>}
+                                {msg.msgtype == 'photo' && <Image source={{ uri: msg.message }} style={{ width: 200, height: 200 }}/>}
                                 {!msg.sent && <Text style={styles.messageSendStatus}>{t('sending')}</Text>}
                                 {msg.sent && <Text style={styles.messageSendStatus}>{t('sent')}</Text>}
                             </View>
@@ -308,7 +298,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                             if(event.nativeEvent.text.length > 0){
                                 setTextInputWidth(60);
                             }else{
-                                setTextInputWidth(80);
+                                setTextInputWidth(70);
                             }
                         }}
                     />
@@ -330,10 +320,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                     }
 
                     {!recording &&
-                    <TouchableOpacity style={[styles.button]} onPress={() => {
-                        router.setParams({ targetAccount: JSON.stringify(targetAccount), selfAccount: JSON.stringify(selfAccount) });
-                        router.push('/targetAccountChatTakePhoto')
-                    }}>
+                    <TouchableOpacity style={[styles.button]} onPress={() => {Keyboard.dismiss; setTakePhoto(true);}}>
                         <Icon name='camera-alt'/>
                     </TouchableOpacity>
                     }
@@ -345,7 +332,25 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                     </TouchableOpacity> 
                     }
                     { !recording && recordingURI.length == 0  && tempInputMessage.length > 0 &&
-                    <TouchableOpacity style={[styles.button]} onPress={sendMsg}>
+                    <TouchableOpacity style={[styles.button]} onPress=
+                        {() => {
+                            let tempSendMsg = {
+                                "action" : "communication",
+                                "data": {
+                                    "message_id": uuid.v4(),
+                                    "from_account_id": selfAccount?.accountID,
+                                    "from_account_name": selfAccount?.accountName,
+                                    "to_account_id": targetAccount?.accountID,
+                                    "to_account_name": targetAccount?.accountName,
+                                    "message": tempInputMessage,
+                                    "msgtype": "text",
+                                    "timestamp": Date.now().toString()
+                                }
+                            }
+                            sendMsg(tempSendMsg);
+                            setMsg(tempSendMsg);
+                        }}
+                    >
                         <Icon name='send'/>
                     </TouchableOpacity>
                     }
@@ -353,6 +358,15 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                 </View>
             </View>
         </KeyboardAvoidingView>
+        {takePhoto && 
+            <TargetAccountChatTakePhoto 
+                setMsg={setMsg}
+                targetAccount={targetAccount} 
+                selfAccount={selfAccount} 
+                setTakePhoto={setTakePhoto}
+            />
+        }
+        </>
     );
 };
 

@@ -44,7 +44,6 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
             })
             .then(response => response.text())
             .then(async data => {
-                console.log(data);
                 if(data=='"profile updated"'){
                     setDataToSecureStore('introduction', introduction);
                     setDataToSecureStore('hobbies', JSON.stringify(Array.from(hobbies)));

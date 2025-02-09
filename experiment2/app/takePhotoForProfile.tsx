@@ -38,7 +38,7 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
         const result = await manipulateAsync(
             uri,
             [{ resize: { width: 800 } }], // Resize the image to a width of 800px
-            { compress: 0.1 } // Compress the image to 70% quality
+            { compress: 0 } // Compress the image to 70% quality
         );
         return result.uri;
     };
@@ -51,9 +51,7 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
             aspect: [4, 3],
             quality: 1,
         });
-    
-        console.log(result);
-    
+        
         if (!result.canceled) {
             const reader = new FileReader();
             reader.onloadend = async () => {
@@ -84,7 +82,7 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
                                     const manipResult = await manipulateAsync(
                                         photo.uri,
                                         [{ flip: FlipType.Horizontal }, { resize: { width: 800 } }],
-                                        { base64: true, compress: 0.1 },
+                                        { base64: true, compress: 0.05 },
                                     );
                                     if(manipResult.base64 != null){
                                         let manipResultInBase64 = (base64Result.substring(0, base64Result.indexOf('base64,'))+ 'base64,') + manipResult.base64;
@@ -92,8 +90,16 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
                                         setNeedToSave(true);
                                     }
                                 } else {
-                                    photoInBase64.current = base64Result;
-                                    setNeedToSave(true);
+                                    const manipResult = await manipulateAsync(
+                                        photo.uri,
+                                        [{ resize: { width: 800 } }],
+                                        { base64: true, compress: 0.05 },
+                                    );
+                                    if(manipResult.base64 != null){
+                                        let manipResultInBase64 = (base64Result.substring(0, base64Result.indexOf('base64,'))+ 'base64,') + manipResult.base64;
+                                        photoInBase64.current = manipResultInBase64;
+                                        setNeedToSave(true);
+                                    }
                                 }
                                 setEditPhoto(false);
                             };
@@ -127,7 +133,6 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
         })
         .then(response => response.text())
         .then(async data => {
-            console.log(data);
             if(data=='"profile updated"'){
                 setDataToSecureStore('profilePhoto', photoInBase64.current);
                 setLoading(false);
