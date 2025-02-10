@@ -7,6 +7,7 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-na
 import { useTranslation } from "react-i18next";
 import { Icon } from 'react-native-elements'
 import { manipulateAsync, FlipType } from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system';
 
 interface MapProps {
     setMsg: React.Dispatch<React.SetStateAction<string>>;
@@ -22,6 +23,7 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
     const cameraRef = React.useRef<CameraView>(null);
     let [editPhoto, setEditPhoto] = useState(true);
     let photoInBase64 = useRef("");
+    let photoURI = useRef("");
 
     const compressImage = async (uri: string) => {
         const result = await manipulateAsync(
@@ -30,9 +32,9 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
             { compress: 0 }
         );
         return result.uri;
-    };
+    }
 
-    async function pickImage() {
+    const pickImage = async () => {
         // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
@@ -46,6 +48,7 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
             reader.onloadend = async () => {
                 const base64Result = reader.result as string;
                 photoInBase64.current = base64Result;
+                photoURI.current = result.uri;
                 setEditPhoto(false);
             };
             let response = await fetch(result.assets[0].uri);
@@ -56,7 +59,7 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
         }
     }
     
-    function takePicture() { 
+    const takePicture = () => { 
         if(cameraRef.current?._onCameraReady) {
             cameraRef.current.takePictureAsync().then((photo) => {
                 if (photo?.uri) {
@@ -87,6 +90,7 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
                                         photoInBase64.current = manipResultInBase64;
                                     }
                                 }
+                                photoURI.current = photo.uri;
                                 setEditPhoto(false);
                             };
                             reader.readAsDataURL(blob);
@@ -96,6 +100,10 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
                 }
             })
         };
+    }
+
+    const deleteRecording = async () => {
+        await FileSystem.deleteAsync(photoURI.current);
     }
 
     function send(){
@@ -122,9 +130,10 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
                 "data": tempMsg
             })
         })
-        
+
         setMsg(tempMsg);
         setTakePhoto(false);
+        deleteRecording();
     }
 
     return (

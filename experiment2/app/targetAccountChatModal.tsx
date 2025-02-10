@@ -150,8 +150,45 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         if (recording) {
             await recording.stopAndUnloadAsync();
         }
+        await FileSystem.deleteAsync(recordingURI);
         setRecordingURI('');
         setRecording(undefined);
+    }
+
+    const downloadAudioAndPlay = async (filename: string) => {
+        fetch('https://90912xli63.execute-api.ap-south-1.amazonaws.com/loadData', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "action" : "communication",
+                "data": {
+                    "action": "loadAudio",
+                    "data": {
+                        "filename": filename
+                    }
+                }
+            })
+        })
+        .then(response => response.json())
+        .then(async data => {
+            if (data.statusCode === 200) {
+                const fileUri = FileSystem.documentDirectory + filename;
+                try{
+                    const base64Response = await fetch(`data:audio/*;base64,${data.audioContent}`);
+                    const blob = await base64Response.blob();
+                    await FileSystem.writeAsStringAsync(fileUri, data.audioContent, { encoding: FileSystem.EncodingType.Base64 });
+                    const { sound } = await Audio.Sound.createAsync({ uri: fileUri });
+                    if (sound) { await sound.playAsync(); }
+                } finally {
+                    await FileSystem.deleteAsync(fileUri);
+                }
+            }
+        })
+        .catch((error) => {
+            console.error('loadHobbiesLibrary - Error:', error);
+        });
     }
 
     const sendMsg = async (msg: {}) => {
@@ -162,7 +199,52 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         else{
             storePendingMessage(tempSendMsg);
         }
-    };
+    }
+
+    const sendAudioMsg = async () => {
+        // Get the file detail from the recordingURI
+        let recordingDetails = await FileSystem.getInfoAsync(recordingURI);
+        let recordingFileName = recordingDetails.uri.split('/').pop();
+        let recordingFileType = recordingFileName?.split('.').pop();
+    
+        // Read the file and convert it to base64
+        let base64File = await FileSystem.readAsStringAsync(recordingURI, { encoding: FileSystem.EncodingType.Base64 });
+    
+        // Create the JSON payload
+        const tempMsg = {
+            action : 'sendAudio',
+            data: {
+                message: {
+                    name: recordingFileName,
+                    type: 'audio/' + recordingFileType,
+                    base64: base64File
+                },
+                message_id: uuid.v4(),
+                from_account_id: selfAccount?.accountID,
+                from_account_name: selfAccount?.accountName,
+                to_account_id: targetAccount?.accountID,
+                to_account_name: targetAccount?.accountName,
+                msgtype: 'audio',
+                timestamp: Date.now().toString()
+            }
+        }
+    
+        // Send the POST request with the JSON payload
+        fetch('https://19h9udqig3.execute-api.ap-south-1.amazonaws.com/chatCommunication_sendBigFile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                "action" : "communication",
+                "data": tempMsg
+            })
+        })
+        const filename: any = tempMsg.data.message_id+"_"+tempMsg.data.message.name;
+        tempMsg.data.message = filename;
+        setMsg(tempMsg);
+        deleteRecording();
+    }
 
     const setMsg = async (tempSendMsg: {}) => {
         setTempInputMessage('');
@@ -182,32 +264,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                 sent: false
             }
         ]);
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-    }
-
-    const sendRecordingMsg = async () => {
-        //get the file detail from the recordingURI
-        let recordingDetails = await FileSystem.getInfoAsync(recordingURI);
-        console.log('recordingDetails:', recordingDetails);
-        //convert the recording to base64
-        let recordingBase64 = await FileSystem.readAsStringAsync(recordingURI, { encoding: FileSystem.EncodingType.Base64 });
-        /*
-        sendMsg(
-            {
-                "action" : "communication",
-                "data": {
-                    "message_id": uuid.v4(),
-                    "from_account_id": selfAccount?.accountID,
-                    "from_account_name": selfAccount?.accountName,
-                    "to_account_id": targetAccount?.accountID,
-                    "to_account_name": targetAccount?.accountName,
-                    "message": recordingBase64,
-                    "msgtype": "audio",
-                    "timestamp": Date.now().toString()
-                }
-            }
-        );
-        */
+        setTimeout(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, 300);
     }
 
     ws.onmessage = async e => {
@@ -254,7 +311,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
             }
             setTimeout(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, 300);
         }
-    };
+    }
 
     return (
         <>
@@ -269,8 +326,17 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                         {messages && messages.map((msg, index) => (
                             <View key={msg.messageID } style={ msg.from_account_id !== selfAccount?.accountID ? styles.messageContainerForTargetAccount : styles.messageContainerForSelfAccount }>
                                 <Text style={styles.messageTimestamp}>{new Date(msg.timestamp).toLocaleString()}</Text>
-                                {msg.msgtype == 'text' && <Text style={styles.messageText}>{msg.message}</Text>}
-                                {msg.msgtype == 'photo' && <Image source={{ uri: msg.message }} style={{ width: 200, height: 200 }}/>}
+                                {msg.msgtype == 'text' && 
+                                <Text style={styles.messageText}>{msg.message}</Text>
+                                }
+                                {msg.msgtype == 'photo' && 
+                                <Image source={{ uri: msg.message }} style={{ width: 200, height: 200 }}/>
+                                }
+                                {msg.msgtype == 'audio' && 
+                                <TouchableOpacity style={[styles.playrecordingButton]} onPress={() => downloadAudioAndPlay(msg.message)}>
+                                    <Icon name='audiotrack'/>
+                                </TouchableOpacity>
+                                }
                                 {!msg.sent && <Text style={styles.messageSendStatus}>{t('sending')}</Text>}
                                 {msg.sent && <Text style={styles.messageSendStatus}>{t('sent')}</Text>}
                             </View>
@@ -319,7 +385,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                     </TouchableOpacity>
                     }
 
-                    {!recording &&
+                    {!recording && recordingURI.length == 0 &&
                     <TouchableOpacity style={[styles.button]} onPress={() => {Keyboard.dismiss; setTakePhoto(true);}}>
                         <Icon name='camera-alt'/>
                     </TouchableOpacity>
@@ -327,7 +393,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                     
 
                     { !recording && recordingURI.length > 0 &&
-                    <TouchableOpacity style={[styles.button]} onPress={sendRecordingMsg}>
+                    <TouchableOpacity style={[styles.button]} onPress={sendAudioMsg}>
                         <Icon name='send'/>
                     </TouchableOpacity> 
                     }
