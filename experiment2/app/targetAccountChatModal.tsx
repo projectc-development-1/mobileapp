@@ -115,7 +115,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
 
     const audioRecording = async (isRecording: boolean) => {
         if (!permissionResponse || permissionResponse.status !== 'granted') {
-            Alert.alert('Permission to access microphone was denied');
+            Audio.requestPermissionsAsync();
         }else{
             if(isRecording){
                 if (recording) { await recording.stopAndUnloadAsync(); }
@@ -187,7 +187,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
             }
         })
         .catch((error) => {
-            console.error('loadHobbiesLibrary - Error:', error);
+            console.error('downloadAudioAndPlay - Error:', error);
         });
     }
 
@@ -337,8 +337,15 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                                     <Icon name='audiotrack'/>
                                 </TouchableOpacity>
                                 }
-                                {!msg.sent && <Text style={styles.messageSendStatus}>{t('sending')}</Text>}
-                                {msg.sent && <Text style={styles.messageSendStatus}>{t('sent')}</Text>}
+                                {msg.msgtype == 'video' && 
+                                <Text style={styles.messageText}>{msg.message}</Text>
+                                }
+                                {msg.from_account_id === selfAccount?.accountID && msg.sent &&
+                                    <Text style={styles.messageSendStatus}>{t('sent')}</Text>
+                                }
+                                {msg.from_account_id === selfAccount?.accountID && !msg.sent &&
+                                    <Text style={styles.messageSendStatus}>{t('sending')}</Text>
+                                }
                             </View>
                         ))}
                     </ScrollView>

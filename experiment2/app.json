@@ -18,7 +18,13 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.development.x1.exporouterexample"
+      "package": "com.development.x1.exporouterexample",
+      "permissions": [
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -40,13 +46,23 @@
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/NotoSansTC-VariableFont_wght.ttf", "./assets/fonts/Oswald-VariableFont_wght.ttf"]
+          "fonts": [
+            "./assets/fonts/NotoSansTC-VariableFont_wght.ttf",
+            "./assets/fonts/Oswald-VariableFont_wght.ttf"
+          ]
         }
       ],
       [
         "expo-audio",
         {
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        }
+      ],
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": true,
+          "supportsPictureInPicture": true
         }
       ]
     ]
