@@ -11,5 +11,7 @@
     "save": "保存",
     "introduction_placeholder": "寫點關於自己的東西",
     "sending": "發送中...",
-    "sent": "已發送"
+    "sendFail": "發送失敗",
+    "sent": "已發送",
+    "payLoadTooBig": "文件太大啦"
 }

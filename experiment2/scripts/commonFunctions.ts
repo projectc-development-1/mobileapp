@@ -2,6 +2,10 @@ import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18next from 'i18next';
 import { useRef } from 'react';
+import { Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import { Video, Image, Audio } from 'react-native-compressor';
+
 
 let ws = useRef<WebSocket>(new WebSocket('wss://o8e86zvvfl.execute-api.ap-south-1.amazonaws.com/development/'));
 
@@ -96,6 +100,42 @@ export default function CommonFunctions() {
         }
     }
 
+    const writeBase64ToFile = async (header: string, base64String: string, fileUri: string) => {
+        if(Platform.OS == 'android'){
+            await FileSystem.writeAsStringAsync(fileUri, base64String, {
+                encoding: FileSystem.EncodingType.Base64,
+            });
+        }
+        if(Platform.OS == 'ios'){
+            const base64Response = await fetch(header+base64String);
+            const blob = await base64Response.blob();
+            await FileSystem.writeAsStringAsync(fileUri, base64String, { encoding: FileSystem.EncodingType.Base64 });
+        }
+    }
+
+    const compressImage = async (uri: string) => {
+        const result = await Image.compress(uri, {
+            maxWidth: 400,
+            quality: 0.5,
+        });
+        return result;
+    };
+
+    const compressVideo = async (uri: string) => {
+        const result = await Video.compress(uri, { compressionMethod: 'manual' }, (progress) => {
+            console.log('Compression Progress: ', progress);
+        });
+        return result;
+    }
+
+    const compressAudio = async (uri: string) => {
+        const result = await Audio.compress(
+            uri, // recommended wav file but can be use mp3 file
+            { quality: 'medium' }
+          );
+        return result;
+    }
+
     return {
         languageSwitcher,
         setDataToSecureStore,
@@ -106,6 +146,10 @@ export default function CommonFunctions() {
         wsSend,
         ws,
         storePendingMessage,
-        sendPendingMessages
+        sendPendingMessages,
+        writeBase64ToFile,
+        compressImage,
+        compressVideo,
+        compressAudio
     };
 }

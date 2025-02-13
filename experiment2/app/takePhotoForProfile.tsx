@@ -26,6 +26,7 @@ interface MapProps {
 const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadProfilePhoto }) => {
 
     const { t } = useTranslation();
+    const { compressImage } = commonFunctions();
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = useCameraPermissions();
     const cameraRef = React.useRef<CameraView>(null);
@@ -33,15 +34,6 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
     let photoInBase64 = useRef(iconBody);
     let [loading, setLoading] = useState(false);
     let [needToSave, setNeedToSave] = useState(false);
-
-    const compressImage = async (uri: string) => {
-        const result = await manipulateAsync(
-            uri,
-            [{ resize: { width: 800 } }], // Resize the image to a width of 800px
-            { compress: 0 } // Compress the image to 70% quality
-        );
-        return result.uri;
-    };
 
     async function pickImage() {
         // No permissions request is necessary for launching the image library

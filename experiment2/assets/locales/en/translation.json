@@ -11,5 +11,7 @@
     "save": "Save",
     "introduction_placeholder": "write something about yourself",
     "sending": "Sending...",
-    "sent": "Sent"
+    "sendFail": "Send Fail",
+    "sent": "Sent",
+    "payLoadTooBig": "Oh, the file is too big"
   }
