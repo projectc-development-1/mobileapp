@@ -8,8 +8,9 @@ import commonFunctions from '@/scripts/commonFunctions';
 import TargetAccountChatTakePhoto from './targetAccountChatTakePhoto';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
-import * as Compressor from 'react-native-compressor';
-import { set } from 'immutable';
+import ImageView from "react-native-image-viewing";
+import { ImageSource } from 'react-native-image-viewing/dist/@types';
+
 
 interface MapProps {
     wsSend: (data: string) => void;
@@ -45,7 +46,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
     const [recording, setRecording] = useState<Audio.Recording | undefined>(undefined);
     const [recordingURI, setRecordingURI] = useState('');
     const [takePhoto, setTakePhoto] = useState(false);
-    const [seePhotoInFullScreen, setSeePhotoInFullScreen] = useState("");
+    let seePhotoInFullScreen: ImageSource[] | { uri: string; }[] = [];
     let videoURI = useRef("");
     
     if(loadHistoryMessages.current){
@@ -254,7 +255,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         .then(response => response.json())
         .then(async data => {
             if (data.statusCode === 200) {
-                setSeePhotoInFullScreen("data:image/*;base64," + data.content.split('base64')[1]);
+                seePhotoInFullScreen.push({ uri: "data:image/*;base64," + data.content.split('base64')[1] });
             }
         })
         .catch((error) => {
@@ -400,7 +401,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
     return (
         <>
         {seePhotoInFullScreen.length>0 &&
-        <Image source={{ uri: seePhotoInFullScreen }} style={styles.photoInFullScreen}/>
+        <ImageView images={ seePhotoInFullScreen } imageIndex={0} visible={true} onRequestClose={() => seePhotoInFullScreen=[]}/>
         }
         <KeyboardAvoidingView
             style={styles.container}
