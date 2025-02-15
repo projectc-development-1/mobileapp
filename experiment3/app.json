@@ -14,10 +14,20 @@
       "appleTeamId": "3NGJMBVBNR"
     },
     "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCXqRaSu_Fknq7r9gJtm4jE9qDZ71YTa_E"
+        }
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.development.x1.experiment3"
     },
     "web": {
       "bundler": "metro",
@@ -35,6 +45,14 @@
           "backgroundColor": "#ffffff"
         }
       ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ],
       "expo-secure-store",
       "expo-font",
       "react-native-compressor",
@@ -42,6 +60,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "baf27e3c-b4b1-45a9-879f-9b4084e5a828"
+      }
     }
   }
 }

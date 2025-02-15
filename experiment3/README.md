@@ -109,7 +109,7 @@ Common command #################################
 npx expo install --fix
 
 expo init [project name]
-npx expo prebuild
+ 
 npx expo start
 npx expo run:ios
 npx expo run:ios --device
@@ -141,3 +141,8 @@ https://reactnativeelements.com/docs/1.2.0/icon
 
 AWS lambda dynamoDB api 
 https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html
+
+
+
+For Google Map API
+<meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyCXqRaSu_Fknq7r9gJtm4jE9qDZ71YTa_E"/>

@@ -46,7 +46,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
     const [recording, setRecording] = useState<Audio.Recording | undefined>(undefined);
     const [recordingURI, setRecordingURI] = useState('');
     const [takePhoto, setTakePhoto] = useState(false);
-    let seePhotoInFullScreen: ImageSource[] | { uri: string; }[] = [];
+    const [seePhotoInFullScreen, setSeePhotoInFullScreen] = useState<ImageSource[]>([]);
     let videoURI = useRef("");
     
     if(loadHistoryMessages.current){
@@ -255,7 +255,9 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         .then(response => response.json())
         .then(async data => {
             if (data.statusCode === 200) {
-                seePhotoInFullScreen.push({ uri: "data:image/*;base64," + data.content.split('base64')[1] });
+                let tempSeePhotoInFullScreen = seePhotoInFullScreen;
+                tempSeePhotoInFullScreen.push({ uri: "data:image/*;base64," + data.content.split('base64')[1] });
+                setSeePhotoInFullScreen(tempSeePhotoInFullScreen);
             }
         })
         .catch((error) => {
@@ -401,7 +403,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
     return (
         <>
         {seePhotoInFullScreen.length>0 &&
-        <ImageView images={ seePhotoInFullScreen } imageIndex={0} visible={true} onRequestClose={() => seePhotoInFullScreen=[]}/>
+        <ImageView images={ seePhotoInFullScreen } imageIndex={0} visible={true} onRequestClose={() => setSeePhotoInFullScreen([])}/>
         }
         <KeyboardAvoidingView
             style={styles.container}
@@ -486,7 +488,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                     }
 
                     {!recording && recordingURI.length == 0 &&
-                    <TouchableOpacity style={[styles.button]} onPress={() => {Keyboard.dismiss; setTakePhoto(true);}}>
+                    <TouchableOpacity style={[styles.button]} onPress={() => {Keyboard.dismiss(); setTakePhoto(true);}}>
                         <Icon name='camera-alt'/>
                     </TouchableOpacity>
                     }
