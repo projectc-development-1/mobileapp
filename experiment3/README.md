@@ -128,6 +128,7 @@ https://developer.apple.com/account
 
 Google Service Account
 https://console.cloud.google.com/iam-admin/serviceaccounts?authuser=4&inv=1&invt=Abnl4g&project=expermient1
+https://play.google.com/console
 
 Reference how to build apk locally
 https://docs.expo.dev/build-reference/apk/
