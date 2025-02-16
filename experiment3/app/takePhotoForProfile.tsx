@@ -143,43 +143,43 @@ const Map: React.FC<MapProps> = ({ selfAccount, iconBody, setEditProfile, loadPr
             }
             {!loading &&
                 <>
-                    {!editPhoto &&
-                        <Image source={{ uri: photoInBase64.current }} style={styles.icon}/> 
+                {!editPhoto &&
+                <Image source={{ uri: photoInBase64.current }} style={styles.icon}/> 
+                }
+                {editPhoto && permission && permission.granted &&
+                <>
+                <CameraView style={styles.icon} facing={facing} ref={cameraRef} />
+                <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 20 }}>
+                    <TouchableOpacity onPress={ () => {setFacing(current => (current === 'back' ? 'front' : 'back'));} }>
+                        <Icon name='cameraswitch'/>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={takePicture} style={{ marginLeft: 20 }}>
+                        <Icon name='camera-alt'/>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={pickImage} style={{ marginLeft: 20 }}>
+                        <Icon name='image'/>
+                    </TouchableOpacity>
+                </View>
+                </>
+                }
+                {editPhoto && permission && !permission.granted &&
+                <View style={styles.container}>
+                    <Text style={styles.message}>{t('cameraPermissionRequired')}</Text>
+                    <TouchableOpacity onPress={requestPermission}>
+                        <Text style={styles.text}>{t('requestPermission')}</Text>
+                    </TouchableOpacity>
+                </View>
+                }
+                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                    <TouchableOpacity onPress={() => setEditPhoto(!editPhoto)} >
+                        <Icon name={ editPhoto==false ? 'edit' : 'edit-off' }/>
+                    </TouchableOpacity>
+                    {needToSave && 
+                    <TouchableOpacity onPress={saveAction} style={{ marginLeft: 20 }}>
+                        <Icon name='save'/>
+                    </TouchableOpacity>
                     }
-                    {editPhoto && permission && permission.granted &&
-                        <>
-                            <CameraView style={styles.icon} facing={facing} ref={cameraRef} />
-                            <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 20 }}>
-                                <TouchableOpacity onPress={ () => {setFacing(current => (current === 'back' ? 'front' : 'back'));} }>
-                                    <Icon name='cameraswitch'/>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={takePicture} style={{ marginLeft: 20 }}>
-                                    <Icon name='camera-alt'/>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={pickImage} style={{ marginLeft: 20 }}>
-                                    <Icon name='image'/>
-                                </TouchableOpacity>
-                            </View>
-                        </>
-                    }
-                    {editPhoto && permission && !permission.granted &&
-                        <View style={styles.container}>
-                            <Text style={styles.message}>{t('cameraPermissionRequired')}</Text>
-                            <TouchableOpacity onPress={requestPermission}>
-                                <Text style={styles.text}>{t('requestPermission')}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    }
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                        <TouchableOpacity onPress={() => setEditPhoto(!editPhoto)} >
-                            <Icon name={ editPhoto==false ? 'edit' : 'edit-off' }/>
-                        </TouchableOpacity>
-                        {needToSave && 
-                            <TouchableOpacity onPress={saveAction} style={{ marginLeft: 20 }}>
-                                <Icon name='save'/>
-                            </TouchableOpacity>
-                        }
-                    </View>
+                </View>
                 </>
             }
         </>

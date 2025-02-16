@@ -19,7 +19,6 @@ interface MapProps {
 const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount, openTargetAccountModalType, setOpenTargetAccountModalType }) => {
     const { t } = useTranslation();
     const fontFamily = getFontFamily();
-    const { getDataFromSecureStore, setDataToSecureStore } = commonFunctions();
     let firstRender = useRef(true);
     let [photoInBase64, setPhotoInBase64] = useState<string | null>(null);
     let [introduction, setIntroduction] = useState<string | null>(null);
@@ -60,10 +59,13 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount, openT
     return(
         <>
         <View style={styles.targetIconContainer}>
+            {photoInBase64 ? 
+            <Image source={{ uri: photoInBase64 }} style={styles.targetIcon}/> :
+            <Image source={require('../assets/images/noProfilePhoto.jpg')} style={styles.targetIcon}/>
+            }
             <ScrollView horizontal={true} style={styles.targetAccountNameContainer} >
                 <Text style={[styles.targetAccountName, { fontFamily }]}>{targetAccount?.accountName}</Text>
             </ScrollView>
-            {photoInBase64 && <Image source={{ uri: photoInBase64 }} style={styles.targetIcon}/>}
         </View>
         <View style={styles.toolListContainer}>
             <TouchableOpacity onPress={() => setOpenTargetAccountModalType(1) } style={{paddingHorizontal: 10}}>
@@ -112,7 +114,7 @@ const styles = StyleSheet.create({
     },
     targetAccountName: {
         alignItems: 'center',
-        fontSize: 10,
+        fontSize: 20,
         color: 'rgb(0, 0, 0)',
         marginTop: 10,
         fontWeight: 'bold',

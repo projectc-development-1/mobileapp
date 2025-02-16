@@ -21,6 +21,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
     let [hobbies, setHobbies] = useState(new Set());
     let [hobbiesLibrary, setHobbiesLibrary] = useState<any[][]>([]);
     let [needToSave, setNeedToSave] = useState(false);
+    const [newAccountName, setNewAccountName] = useState(selfAccount?.accountName);
 
     function saveAction(){
         if(needToSave){
@@ -36,6 +37,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                         "action": "updateProfileInformation",
                         "data": {
                             "accountID": selfAccount?.accountID,
+                            "accountName": newAccountName,
                             "introduction": introduction,
                             "hobbies": Array.from(hobbies)
                         }
@@ -45,6 +47,10 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
             .then(response => response.text())
             .then(async data => {
                 if(data=='"profile updated"'){
+                    if (newAccountName) { 
+                        setDataToSecureStore('accountName', newAccountName); 
+                        if (selfAccount) { selfAccount.accountName = newAccountName; }
+                    }
                     setDataToSecureStore('introduction', introduction);
                     setDataToSecureStore('hobbies', JSON.stringify(Array.from(hobbies)));
                     setEditProfile(false);
@@ -153,13 +159,15 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
     return (
         <>
             <View style={styles.containerInNormal}>
-                <Text style={[styles.accountName, { fontFamily }]}>{selfAccount?.accountName}</Text>
                 <TouchableOpacity onPress={() => setEditProfile(true)}>
                     {iconBody.length > 0 ?
                         <Image source={{ uri: iconBody }} style={styles.icon}/> :
                         <Image source={require('../assets/images/noProfilePhoto.jpg')} style={styles.icon}/>
                     }
                 </TouchableOpacity>
+                <ScrollView horizontal={true} style={styles.accountNameContainer} >
+                    <Text style={[styles.accountName, { fontFamily }]}>{selfAccount?.accountName}</Text>
+                </ScrollView>
             </View>
             {editProfile && (
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -177,6 +185,9 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                                 setEditProfile={setEditProfile} 
                                 loadProfilePhoto={loadProfilePhoto}
                             />
+                            <ScrollView horizontal={true} style={styles.editAccountNameContainer} >
+                                <TextInput style={[styles.editAccountName, { fontFamily }]} onChangeText={setNewAccountName} value={newAccountName} onChange={() => setNeedToSave(true)}/>
+                            </ScrollView>
                         </View>
                         <View style={{alignItems: 'center'}}>
                             <ScrollView horizontal={true} style={styles.introductionContainer} >
@@ -250,12 +261,29 @@ const styles = StyleSheet.create({
         height: 100,
         borderRadius: 25,
     },
+    accountNameContainer: {
+        alignSelf: 'flex-start',
+        marginTop: 10,
+        marginLeft: 15,
+        width: 70,
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+    },
     accountName: {
-        alignItems: 'center',
         fontSize: 25,
         color: 'rgb(0, 0, 0)',
-        marginTop: 10,
         fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    editAccountNameContainer: {
+        alignSelf: 'center',
+        marginTop: 20,
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+    },
+    editAccountName: {
+        fontSize: 25,
+        color: 'rgb(0, 0, 0)',
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
     closeButton: {
         position: 'absolute',
@@ -277,6 +305,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 255, 255, 0.71)',
         width: 300,
         height: 160,
+        marginTop: 20,
         marginBottom: 50,
         borderRadius: 10,
     },

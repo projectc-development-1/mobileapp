@@ -1,7 +1,7 @@
 import * as Location from "expo-location";
 import { LocationObject } from "expo-location";
 import React, { useRef, useState } from "react";
-import { View, StyleSheet, Platform, Alert, TouchableOpacity, Image, Text, ScrollView } from "react-native";
+import { View, StyleSheet, Platform, Image, ActivityIndicator } from "react-native";
 import { Map as ImmutableMap } from 'immutable';
 import MapView, { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { useTranslation } from "react-i18next";
@@ -252,26 +252,26 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
                 }}
             >
                 {selflocation && selflocation.current.map((self_location, index) => (
-                    <Marker
-                        key={index}
-                        coordinate={{latitude: self_location.coords.latitude, longitude: self_location.coords.longitude}}
-                    >
-                        <Image source={require('../assets/images/selflocation30X30.png')}/>
-                    </Marker>
+                <Marker
+                    key={index}
+                    coordinate={{latitude: self_location.coords.latitude, longitude: self_location.coords.longitude}}
+                >
+                    <Image source={require('../assets/images/selflocation30X30.png')}/>
+                </Marker>
                 ))}
                 {otherlocation && otherlocation.map((other_location, index) => (
-                    <Marker
-                        key={index}
-                        coordinate={{latitude: other_location.coords.latitude, longitude: other_location.coords.longitude}}
-                        onPress={() => {
-                            console.log('Marker pressed');
-                            setTargetAccount({ accountName: other_location.accountName, accountID: other_location.accountID});
-                            setTimeout(() => { setOpenToolBox(true); }, 100);
-                        }}
-                    >
-                        <Image source={require('../assets/images/otherlocation30X30.png')} style={{'display': unreadMsgMap.current.get(other_location.accountID)==undefined?'flex':'none'}} />
-                        <Image source={require('../assets/images/otherAccountWithUnreadMsgWIthUnreadMsgs40X40.gif')} style={{display: unreadMsgMap.current.get(other_location.accountID)==undefined?'none':'flex'}} />
-                    </Marker>
+                <Marker
+                    key={index}
+                    coordinate={{latitude: other_location.coords.latitude, longitude: other_location.coords.longitude}}
+                    onPress={() => {
+                        console.log('Marker pressed');
+                        setTargetAccount({ accountName: other_location.accountName, accountID: other_location.accountID});
+                        setTimeout(() => { setOpenToolBox(true); }, 100);
+                    }}
+                >
+                    <Image source={require('../assets/images/otherlocation30X30.png')} style={{'display': unreadMsgMap.current.get(other_location.accountID)==undefined?'flex':'none'}} />
+                    <Image source={require('../assets/images/otherAccountWithUnreadMsgWIthUnreadMsgs40X40.gif')} style={{display: unreadMsgMap.current.get(other_location.accountID)==undefined?'none':'flex'}} />
+                </Marker>
                 ))}
             </MapView>
             {openToolBox && (
