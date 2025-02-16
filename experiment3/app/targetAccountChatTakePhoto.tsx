@@ -1,15 +1,15 @@
-import { Camera, CameraView, CameraType, useCameraPermissions, CameraMode } from 'expo-camera';
+import { CameraView, CameraType, useCameraPermissions, CameraMode } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useRef } from 'react';
 import uuid from 'react-native-uuid';
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View, Image, Button } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { useTranslation } from "react-i18next";
 import { Icon } from 'react-native-elements'
 import * as FileSystem from 'expo-file-system';
 import { useVideoPlayer, VideoPlayer, VideoView } from 'expo-video';
 import commonFunctions from '@/scripts/commonFunctions';
-import { Video, Audio } from 'expo-av';
+import { Video } from 'expo-av';
 
 
 interface MapProps {
@@ -32,12 +32,9 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
     let photoOriginalBase64File = useRef("");
     let videoInBase64 = useRef("");
     let videoURI = useRef("");
-    const recordingVideoURIArray = useRef<string[]>([]);
     let [takingVideo, setTakingVideo] = useState(false);
-    const [video, setVideo] = useState();
 
     let videoPlayerSource = useVideoPlayer(videoURI.current, player => { player.loop = true; player.play(); });
-    const [videoplayer, setVideoplayer] = useState<VideoPlayer | undefined>(undefined);
 
     const switchCamera = () => {
         setFacing(current => (current === 'back' ? 'front' : 'back'));
@@ -65,7 +62,6 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
                 else if (result.assets[0].type === 'video') {
                     videoURI.current = result.assets[0].uri;
                     setTimeout(() => {
-                        setVideoplayer( videoPlayerSource );
                         setEditPhoto(false);
                     }, 1000);
                 }
@@ -115,10 +111,11 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
             if (cameraRef.current?._onCameraReady) {
                 setTakingVideo(true);
                 try {
-                    const {status} = await Audio.requestPermissionsAsync();
                     const video = await cameraRef.current.recordAsync();
                     if (video?.uri) {
-                        recordingVideoURIArray.current.push(video.uri);
+                        videoURI.current = video.uri;
+                        setTakingVideo(false);
+                        setEditPhoto(false);
                     } else {
                         Alert.alert('takeVideo - Error', 'Failed to capture video.');
                     }
@@ -128,33 +125,12 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
             } else {
                 console.log('Camera is not ready.');
             }
-        }, 500);
+        }, 1000);
     }
 
     const stopVideoRecording = async () => {
-        try{
-            if (cameraRef.current) {
-                cameraRef.current.stopRecording();
-            }
-            setTimeout(async () => {
-                const mergedVideoType = recordingVideoURIArray.current[0].split('.').pop();
-                let mergedVideoBase64 = "";
-                for (let i = 0; i < recordingVideoURIArray.current.length; i++) {
-                    mergedVideoBase64 += await FileSystem.readAsStringAsync(recordingVideoURIArray.current[i], { encoding: FileSystem.EncodingType.Base64 });
-                }
-                recordingVideoURIArray.current = [];
-                //get the file uri
-                const videoFileName = 'Camera/tempMergedVideo.' + mergedVideoType;
-                const videoFileUri = FileSystem.cacheDirectory + videoFileName;
-                await FileSystem.writeAsStringAsync(videoFileUri, mergedVideoBase64, { encoding: FileSystem.EncodingType.Base64 });
-                videoURI.current = videoFileUri;
-                
-                setVideoplayer( videoPlayerSource );
-                setTakingVideo(false);
-                setEditPhoto(false);
-            }, 1000);
-        } catch (error) {
-            Alert.alert('stopVideoRecording - Error', 'An error occurred while stopping the video recording.');
+        if (cameraRef.current) {
+            cameraRef.current.stopRecording();
         }
     };
 
@@ -164,7 +140,6 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
             photoURI.current = "";
         }
         videoPlayerSource.pause();
-        setVideoplayer(undefined);
         if (videoURI.current.length > 0){
             await FileSystem.deleteAsync(videoURI.current);
             videoURI.current = "";
@@ -337,25 +312,29 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
             <View>
                 <CameraView mode={cameraModeRef} style={styles.cameraView} facing={facing} ref={cameraRef} mirror={facing === 'front'}>
                     <View style={styles.controlButtonsContainer1}>
+                        {!takingVideo &&
                         <TouchableOpacity onPress={switchCamera}>
                             <Icon name='cameraswitch'/>
                         </TouchableOpacity>
+                        }
                         {!takingVideo &&
                         <TouchableOpacity onPress={takePicture} style={{ marginLeft: 20 }}>
                             <Icon name='camera-alt'/>
                         </TouchableOpacity>
                         }
                         {takingVideo ?
-                        <TouchableOpacity onPress={stopVideoRecording} style={{ marginLeft: 20 }}>
+                        <TouchableOpacity onPress={stopVideoRecording} >
                             <Icon name='stop'/>
                         </TouchableOpacity> :
                         <TouchableOpacity onPress={takeVideo} style={{ marginLeft: 20 }}>
                             <Icon name='videocam'/>
                         </TouchableOpacity>
                         }
+                        {!takingVideo &&
                         <TouchableOpacity onPress={pickVideoOrImage} style={{ marginLeft: 20 }}>
                             <Icon name='image'/>
                         </TouchableOpacity>
+                        }
                     </View>
                     <View style={styles.controlButtonsContainer2}>
                         <TouchableOpacity onPress={() => setTakePhoto(false) } >

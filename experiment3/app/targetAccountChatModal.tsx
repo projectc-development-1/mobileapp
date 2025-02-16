@@ -10,7 +10,7 @@ import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import ImageView from "react-native-image-viewing";
 import { ImageSource } from 'react-native-image-viewing/dist/@types';
-
+import { useVideoPlayer, VideoPlayer, VideoView } from 'expo-video';
 
 interface MapProps {
     wsSend: (data: string) => void;
@@ -34,7 +34,7 @@ interface Message {
 
 const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => {
     const { t } = useTranslation();
-    const { storePendingMessage, writeBase64ToFile, compressAudio } = commonFunctions();
+    const { storePendingMessage, compressAudio } = commonFunctions();
     const [textInputHeight, setTextInputHeight] = useState(0);
     const [textInputWidth, setTextInputWidth] = useState(70);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -42,12 +42,14 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
     let loadHistoryMessagesDone = useRef<boolean>(false);
     const [tempInputMessage, setTempInputMessage] = useState<string>('');
     const scrollViewRef = useRef<ScrollView>(null);
-    const [permissionResponse, requestPermission] = Audio.usePermissions();
+    const [permissionResponse] = Audio.usePermissions();
     const [recording, setRecording] = useState<Audio.Recording | undefined>(undefined);
     const [recordingURI, setRecordingURI] = useState('');
     const [takePhoto, setTakePhoto] = useState(false);
     const [seePhotoInFullScreen, setSeePhotoInFullScreen] = useState<ImageSource[]>([]);
+    const [playVideo, setPlayVideo] = useState(false);
     let videoURI = useRef("");
+    let videoPlayerSource = useVideoPlayer(videoURI.current, player => { player.loop = true; player.play(); });
     
     if(loadHistoryMessages.current){
         console.log('loading history messages');
@@ -186,19 +188,22 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         .then(response => response.json())
         .then(async data => {
             if (data.statusCode === 200) {
-                const fileUri = FileSystem.documentDirectory + filename;
-                try{
-                    await writeBase64ToFile('data:video/*;base64,', data.content, fileUri);
-                    videoURI.current = fileUri;
-                } finally {
-                    await FileSystem.deleteAsync(fileUri);
-                }
+                const videoFileUri = FileSystem.documentDirectory + filename;
+                await FileSystem.writeAsStringAsync(videoFileUri, data.content.split('base64')[1], { encoding: FileSystem.EncodingType.Base64 });
+                videoURI.current = videoFileUri;
+                setPlayVideo(true);
             }
         })
         .catch((error) => {
             console.error('downloadAudioAndPlay - Error:', error);
         });
     }
+
+    const stopVideoRecording = async () => {
+        videoPlayerSource.pause();
+        videoURI.current = "";
+        setPlayVideo(false)
+    };
 
     const downloadAudioAndPlay = async (filename: string) => {
         fetch('https://90912xli63.execute-api.ap-south-1.amazonaws.com/loadData', {
@@ -221,9 +226,9 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
             if (data.statusCode === 200) {
                 const fileUri = FileSystem.documentDirectory + filename;
                 try{
-                    const base64Response = await fetch(`data:audio/*;base64,${data.audioContent}`);
+                    const base64Response = await fetch(`data:audio/*;base64,${data.content}`);
                     const blob = await base64Response.blob();
-                    await FileSystem.writeAsStringAsync(fileUri, data.audioContent, { encoding: FileSystem.EncodingType.Base64 });
+                    await FileSystem.writeAsStringAsync(FileSystem.documentDirectory + filename, data.content, { encoding: FileSystem.EncodingType.Base64 });
                     const { sound } = await Audio.Sound.createAsync({ uri: fileUri });
                     if (sound) { await sound.playAsync(); }
                 } finally {
@@ -405,6 +410,13 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         {seePhotoInFullScreen.length>0 &&
         <ImageView images={ seePhotoInFullScreen } imageIndex={0} visible={true} onRequestClose={() => setSeePhotoInFullScreen([])}/>
         }
+        {playVideo &&
+        <View style={styles.cameraContainer}>
+            <Icon name='close' onPress={stopVideoRecording} />
+            <VideoView player={videoPlayerSource} style={styles.videoView}>
+            </VideoView>
+        </View>
+        }
         <KeyboardAvoidingView
             style={styles.container}
             keyboardVerticalOffset={10}
@@ -421,7 +433,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                                 }
                                 {msg.msgtype == 'photo' && 
                                 <TouchableOpacity onPress={() => downloadImage(msg.message.split("@#@")[1])}>
-                                    <Image source={{ uri: msg.message.split("@#@")[0] }} style={{ width: 200, height: 200 }}/>
+                                    <Image source={{ uri: msg.message.split("@#@")[0] }} style={{ width: 50, height: 50 }}/>
                                 </TouchableOpacity>
                                 }
                                 {msg.msgtype == 'audio' && 
@@ -430,7 +442,9 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                                 </TouchableOpacity>
                                 }
                                 {msg.msgtype == 'video' && 
-                                <Text style={styles.messageText}>{msg.message}</Text>
+                                <TouchableOpacity style={[styles.playrecordingButton]} onPress={() => downloadVideoAndPlay(msg.message)}>
+                                    <Icon name='movie'/>
+                                </TouchableOpacity>
                                 }
                                 {msg.from_account_id === selfAccount?.accountID && msg.sent==1 &&
                                     <Text style={styles.messageSendStatus}>{t('sent')}</Text>
@@ -540,6 +554,23 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
 export default Map;
 
 const styles = StyleSheet.create({
+    cameraContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.81)',
+        position: 'absolute',
+        zIndex: 4,
+        width: 320,
+        height: '65%',
+        borderRadius: 30,
+        top: '8%',
+        alignSelf: 'center',
+    },
+    videoView: {
+        width: 320,
+        height: '90%',
+        alignSelf: 'center',
+    },
     photoInFullScreen: {
         alignItems: 'center',
         justifyContent: 'center',

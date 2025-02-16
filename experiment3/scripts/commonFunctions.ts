@@ -48,6 +48,14 @@ export default function CommonFunctions() {
         }
     };
 
+    const removrDataFromAsyncStore = async (key: string) => {
+        try {
+            await AsyncStorage.removeItem(key);
+        } catch (e) {
+            console.error('Failed to remove data', e);
+        }
+    };
+
     const getDataFromAsyncStore = async (key: string) => {
         try {
             let tempStoredValue = (await AsyncStorage.getItem(key));
@@ -122,9 +130,7 @@ export default function CommonFunctions() {
     };
 
     const compressVideo = async (uri: string) => {
-        const result = await Video.compress(uri, { compressionMethod: 'manual' }, (progress) => {
-            console.log('Compression Progress: ', progress);
-        });
+        const result = await Video.compress(uri, { compressionMethod: 'manual' }, (progress) => {});
         return result;
     }
 
@@ -143,6 +149,7 @@ export default function CommonFunctions() {
         getDataFromSecureStore,
         getDataFromAsyncStore,
         removeDataFromSecureStore,
+        removrDataFromAsyncStore,
         wsSend,
         ws,
         storePendingMessage,
