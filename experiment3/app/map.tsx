@@ -24,9 +24,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
     const fontFamily = getFontFamily();
     const {
         getDataFromSecureStore,
-        setDataToSecureStore,
-        getDataFromAsyncStore,
-        setDataToAsyncStore,
+        removeFromPendingMessageIfSent,
         wsSend,
         ws,
         sendPendingMessages
@@ -211,22 +209,7 @@ const Map: React.FC<MapProps> = ({ selfAccount }) => {
             }
         }
         else if (eInJson.messageID) {
-            let pendingMessage = await getDataFromAsyncStore('pendingMessage');
-            if(pendingMessage){
-                let temppendingMessage = JSON.parse(pendingMessage);
-                if(temppendingMessage.length > 0){
-                    let newpPendingMessage = [];    
-                    let eInJson = JSON.parse(e.data);
-                    if (eInJson.messageID) {
-                        for(let i=0; i<temppendingMessage.length; i++){
-                            if(temppendingMessage[i].data.message_id != eInJson.messageID){
-                                newpPendingMessage.push(temppendingMessage[i]);
-                            }
-                        }
-                        await setDataToAsyncStore('pendingMessage', JSON.stringify(newpPendingMessage));
-                    }
-                }
-            }
+            removeFromPendingMessageIfSent(eInJson.messageID);
         }
     };
 

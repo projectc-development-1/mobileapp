@@ -99,6 +99,7 @@ expo install expo-av
 expo install expo-video
 expo install react-native-compressor
 expo install react-native-image-viewing
+expo install expo-video-thumbnails
 
 
 Google API kys #################################

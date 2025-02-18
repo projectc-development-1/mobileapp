@@ -5,12 +5,13 @@ import { TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Icon } from 'react-native-elements';
 import commonFunctions from '@/scripts/commonFunctions';
+import { Message, MessageContent } from '@/scripts/messageInterfaces';
 import TargetAccountChatTakePhoto from './targetAccountChatTakePhoto';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import ImageView from "react-native-image-viewing";
 import { ImageSource } from 'react-native-image-viewing/dist/@types';
-import { useVideoPlayer, VideoPlayer, VideoView } from 'expo-video';
+import { useVideoPlayer, VideoView } from 'expo-video';
 
 interface MapProps {
     wsSend: (data: string) => void;
@@ -19,22 +20,9 @@ interface MapProps {
     selfAccount: { accountName: string; accountID: string } | null;
 }
 
-interface Message {
-    messageID: string;
-    from_account_id: string;
-    from_account_name: string;
-    to_account_id: string;
-    to_account_name: string;
-    message: string;
-    msgtype: string;
-    timestamp: number;
-    read: boolean;
-    sent: number;
-}
-
 const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => {
     const { t } = useTranslation();
-    const { storePendingMessage, compressAudio } = commonFunctions();
+    const { storePendingMessage, compressAudio, removeFromPendingMessageIfSent } = commonFunctions();
     const [textInputHeight, setTextInputHeight] = useState(0);
     const [textInputWidth, setTextInputWidth] = useState(70);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -74,21 +62,86 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
             loadHistoryMessagesDone.current = true;
             let unread_message_ids_timestamp = [];
             for(let i=0; i<eInJson.result.length; i++){
-                setMessages(prevMessages => [
-                    ...prevMessages,
-                    {
+                const messageItem = Object(eInJson.result[i].message).M
+                const generalMessagegeneralContentItem = Object(messageItem).generalContent;
+                const audioMessagegeneralContentItem = Object(messageItem).audioContent;
+                const imageMessagegeneralContentItem = Object(messageItem).imageContent;
+                const videoMessagegeneralContentItem = Object(messageItem).videoContent;
+                let tempmessage : MessageContent = { generalContent: '', audioContent: '', imageContent: '', videoContent: '' }
+                if(Object(generalMessagegeneralContentItem).S.length > 0){
+                    tempmessage = {
+                        generalContent: Object(generalMessagegeneralContentItem).S,
+                        audioContent: '',
+                        imageContent: '',
+                        videoContent: ''
+                    }
+                }
+                if(Object(audioMessagegeneralContentItem).M != undefined){
+                    const audioContentMap = Object(audioMessagegeneralContentItem).M;
+                    const audioContentFileName = Object(audioContentMap).fileName;
+                    const audioContentInBase64 = Object(audioContentMap).audioInBase64;
+                    const audioContentType = Object(audioContentMap).type;
+                    tempmessage = {
+                        generalContent: '',
+                        audioContent: {
+                            fileName: Object(audioContentFileName).S,
+                            audioInBase64: Object(audioContentInBase64).S,
+                            type: Object(audioContentType).S
+                        },
+                        imageContent: '',
+                        videoContent: ''
+                    }
+                }
+                if(Object(imageMessagegeneralContentItem).M != undefined){
+                    const imageContentMap = Object(imageMessagegeneralContentItem).M;
+                    const imageContentFileName = Object(imageContentMap).fileName;
+                    const imageContentCompressedInBase64 = Object(imageContentMap).photoCompressedInBase64;
+                    const imageContentType = Object(imageContentMap).type;
+                    tempmessage = {
+                        generalContent: '',
+                        audioContent: '',
+                        imageContent: {
+                            fileName: Object(imageContentFileName).S,
+                            photoOriginalInBase64: '',
+                            photoCompressedInBase64: Object(imageContentCompressedInBase64).S,
+                            type: Object(imageContentType).S
+                        },
+                        videoContent: ''
+                    }
+                }
+                if(Object(videoMessagegeneralContentItem).M != undefined){
+                    const videoContentMap = Object(videoMessagegeneralContentItem).M;
+                    const videoContentFileName = Object(videoContentMap).fileName;
+                    const videoContentThumbnailInBase64 = Object(videoContentMap).thumbnailInBase64;
+                    const videoContentType = Object(videoContentMap).type;
+                    tempmessage = {
+                        generalContent: '',
+                        audioContent: '',
+                        imageContent: '',
+                        videoContent: {
+                            fileName: Object(videoContentFileName).S,
+                            videoOriginalInBase64: '',
+                            thumbnailInBase64: Object(videoContentThumbnailInBase64).S,
+                            type: Object(videoContentType).S
+                        }
+                    }
+                }
+                const tempMsg: Message = {
+                    action: 'communication',
+                    data: {
                         messageID: Object(eInJson.result[i].messageID).S,
                         from_account_id: Object(eInJson.result[i].from_account_id).S,
                         from_account_name: Object(eInJson.result[i].from_account_name).S,
                         to_account_id: Object(eInJson.result[i].to_account_id).S,
                         to_account_name: Object(eInJson.result[i].to_account_name).S,
-                        message: Object(eInJson.result[i].message).S,
+                        message: tempmessage,
                         msgtype: Object(eInJson.result[i].msgtype).S,
                         timestamp: parseInt(Object(eInJson.result[i].timestamp).N),
                         read: Object(eInJson.result[i].read).BOOL,
-                        sent: parseInt(Object(eInJson.result[i].sent).N),
+                        sent: parseInt(Object(eInJson.result[i].sent).N)
                     }
-                ]);
+                }
+                setMessages(prevMessages => [ ...prevMessages, tempMsg ]);
                 if(Object(eInJson.result[i].read).BOOL == false && Object(eInJson.result[i].to_account_id).S == selfAccount?.accountID){
                     unread_message_ids_timestamp.push({
                         messageID: Object(eInJson.result[i].messageID).S,
@@ -109,7 +162,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                     })
                 )
             }
-            setMessages(prevMessages => [...prevMessages].sort((a, b) => a.timestamp - b.timestamp));
+            setMessages(prevMessages => [...prevMessages].sort((a, b) => a.data.timestamp - b.data.timestamp));
             setTimeout(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, 300);
         })
         .catch((error) => {
@@ -189,7 +242,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         .then(async data => {
             if (data.statusCode === 200) {
                 const videoFileUri = FileSystem.documentDirectory + filename;
-                await FileSystem.writeAsStringAsync(videoFileUri, data.content.split('base64')[1], { encoding: FileSystem.EncodingType.Base64 });
+                await FileSystem.writeAsStringAsync(videoFileUri, data.content, { encoding: FileSystem.EncodingType.Base64 });
                 videoURI.current = videoFileUri;
                 setPlayVideo(true);
             }
@@ -270,13 +323,12 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         });
     }
 
-    const sendMsg = async (msg: {}) => {
-        let tempSendMsg = msg;
+    const sendMsg = async (msg: Message) => {
         if(loadHistoryMessagesDone.current){
-            wsSend( JSON.stringify(tempSendMsg) )
+            wsSend( JSON.stringify(msg) )
         }
         else{
-            storePendingMessage(tempSendMsg);
+            storePendingMessage(msg);
         }
     }
 
@@ -288,29 +340,32 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         let recordingFileType = recordingFileName?.split('.').pop();    
         // Create the JSON payload
         const tempMsgId = uuid.v4();
-        const tempMsg = {
+        const base64File = await FileSystem.readAsStringAsync(recordingURI, { encoding: FileSystem.EncodingType.Base64 });
+        const tempMsg: Message = {
             action : 'sendAudio',
             data: {
-                message: tempMsgId+"_"+recordingFileName,
-                message_id: tempMsgId,
-                from_account_id: selfAccount?.accountID,
-                from_account_name: selfAccount?.accountName,
-                to_account_id: targetAccount?.accountID,
-                to_account_name: targetAccount?.accountName,
+                messageID: tempMsgId,
+                from_account_id: selfAccount?.accountID || '',
+                from_account_name: selfAccount?.accountName || '',
+                to_account_id: targetAccount?.accountID || '',
+                to_account_name: targetAccount?.accountName || '',
                 msgtype: 'audio',
-                timestamp: Date.now().toString()
+                timestamp: Date.now(),
+                message: {
+                    generalContent: '',
+                    audioContent: { 
+                        fileName: tempMsgId + "_" + recordingFileName,
+                        audioInBase64: base64File,
+                        type: ('audio/' + recordingFileType) || ''
+                    },
+                    imageContent: '',
+                    videoContent: ''
+                },
+                read: false,
+                sent: 0
             }
         }
         setMsg(tempMsg).then(async () => {
-            // Read the file and convert it to base64
-            const base64File = await FileSystem.readAsStringAsync(recordingURI, { encoding: FileSystem.EncodingType.Base64 });
-            const messageContent: any = {
-                name: recordingFileName,
-                type: 'audio/' + recordingFileType,
-                base64: base64File
-            }
-            tempMsg.data.message = messageContent;
-
             // Send the POST request with the JSON payload
             fetch('https://19h9udqig3.execute-api.ap-south-1.amazonaws.com/chatCommunication_sendBigFile', {
                 method: 'POST',
@@ -325,8 +380,8 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                 if (response.status !== 200) {
                     if (response.status === 413) { Alert.alert(t('payLoadTooBig')); }
                     for(let i=0; i<messages.length; i++){
-                        if(messages[i].messageID == tempMsg.data.message_id){
-                            messages[i].sent = -1;
+                        if(messages[i].data.messageID == tempMsg.data.messageID){
+                            messages[i].data.sent = -1;
                             break;
                         }
                     }
@@ -337,24 +392,10 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         deleteRecording();
     }
 
-    const setMsg = async (tempSendMsg: {}) => {
+    const setMsg = async (tempSendMsg: Message) => {
         setTempInputMessage('');
         setTextInputWidth(70);
-        setMessages(prevMessages => [
-            ...prevMessages,
-            {
-                messageID: tempSendMsg.data.message_id || '',
-                from_account_id: tempSendMsg.data.from_account_id || '',
-                from_account_name: tempSendMsg.data.from_account_name || '',
-                to_account_id: tempSendMsg.data.to_account_id || '',
-                to_account_name: tempSendMsg.data.to_account_name || '',
-                message: tempSendMsg.data.message || '',
-                msgtype: tempSendMsg.data.msgtype || '',
-                timestamp: parseInt(tempSendMsg.data.timestamp),
-                read: true,
-                sent: 0
-            }
-        ]);
+        setMessages(prevMessages => [ ...prevMessages, tempSendMsg ]);
         setTimeout(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, 300);
     }
 
@@ -364,30 +405,37 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
         if (eInJson.messageID) {
             if(eInJson.from_account_id == selfAccount?.accountID){
                 for(let i=0; i<messages.length; i++){
-                    if(messages[i].messageID == eInJson.messageID){
-                        messages[i].sent = 1;
+                    if(messages[i].data.messageID == eInJson.messageID){
+                        messages[i].data.sent = 1;
+                        removeFromPendingMessageIfSent(eInJson.messageID);
                         break;
                     }
                 }
                 setMessages(messages);
             }
             if(eInJson.from_account_id != selfAccount?.accountID && eInJson.from_account_id == targetAccount?.accountID){
-                setMessages(prevMessages => [
-                    ...prevMessages,
-                    {
+                const tempMsg: Message = {
+                    action: 'communication',
+                    data: {
                         messageID: eInJson.messageID,
                         from_account_id: eInJson.from_account_id,
                         from_account_name: eInJson.from_account_name,
                         to_account_id: eInJson.to_account_id,
                         to_account_name: eInJson.to_account_name,
-                        message: eInJson.message,
+                        message: {
+                            generalContent: eInJson.message.generalContent,
+                            audioContent: eInJson.message.audioContent,
+                            imageContent: eInJson.message.imageContent,
+                            videoContent: eInJson.message.videoContent
+                        },
                         msgtype: eInJson.msgtype,
                         timestamp: parseInt(eInJson.timestamp),
                         read: eInJson.read,
                         sent: 1
                     }
-                ]);
-                setMessages(prevMessages => [...prevMessages].sort((a, b) => a.timestamp - b.timestamp));
+                }
+                setMessages(prevMessages => [ ...prevMessages, tempMsg ]);
+                setMessages(prevMessages => [...prevMessages].sort((a, b) => a.data.timestamp - b.data.timestamp));
                 wsSend(
                     JSON.stringify({
                         "action" : "communication",
@@ -426,33 +474,33 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <ScrollView ref={scrollViewRef}>
                         {messages && messages.map((msg, index) => (
-                            <View key={msg.messageID } style={ msg.from_account_id !== selfAccount?.accountID ? styles.messageContainerForTargetAccount : styles.messageContainerForSelfAccount }>
-                                <Text style={styles.messageTimestamp}>{new Date(msg.timestamp).toLocaleString()}</Text>
-                                {msg.msgtype == 'text' && 
-                                <Text style={styles.messageText}>{msg.message}</Text>
+                            <View key={msg.data.messageID } style={ msg.data.from_account_id !== selfAccount?.accountID ? styles.messageContainerForTargetAccount : styles.messageContainerForSelfAccount }>
+                                <Text style={styles.messageTimestamp}>{new Date(msg.data.timestamp).toLocaleString()}</Text>
+                                {msg.data.msgtype == 'general' && 
+                                <Text style={styles.messageText}>{msg.data.message.generalContent}</Text>
                                 }
-                                {msg.msgtype == 'photo' && 
-                                <TouchableOpacity onPress={() => downloadImage(msg.message.split("@#@")[1])}>
-                                    <Image source={{ uri: msg.message.split("@#@")[0] }} style={{ width: 50, height: 50 }}/>
+                                {msg.data.msgtype == 'photo' &&  msg.data.message.imageContent  &&
+                                <TouchableOpacity onPress={() => { msg.data.message.imageContent && downloadImage(msg.data.message.imageContent.fileName) }}>
+                                    <Image source={{ uri: msg.data.message.imageContent.photoCompressedInBase64 }} style={{ width: 50, height: 50 }}/>
                                 </TouchableOpacity>
                                 }
-                                {msg.msgtype == 'audio' && 
-                                <TouchableOpacity style={[styles.playrecordingButton]} onPress={() => downloadAudioAndPlay(msg.message)}>
+                                {msg.data.msgtype == 'audio' &&  msg.data.message.audioContent  &&
+                                <TouchableOpacity style={[styles.playrecordingButton]} onPress={() => msg.data.message.audioContent && downloadAudioAndPlay(msg.data.message.audioContent.fileName)}>
                                     <Icon name='audiotrack'/>
                                 </TouchableOpacity>
                                 }
-                                {msg.msgtype == 'video' && 
-                                <TouchableOpacity style={[styles.playrecordingButton]} onPress={() => downloadVideoAndPlay(msg.message)}>
-                                    <Icon name='movie'/>
+                                {msg.data.msgtype == 'video' && msg.data.message.videoContent  &&
+                                <TouchableOpacity style={[styles.playrecordingButton]} onPress={() => msg.data.message.videoContent && downloadVideoAndPlay(msg.data.message.videoContent.fileName)}>
+                                    <Image source={{ uri: msg.data.message.videoContent.thumbnailInBase64 }} style={{ width: 50, height: 50 }}/>
                                 </TouchableOpacity>
                                 }
-                                {msg.from_account_id === selfAccount?.accountID && msg.sent==1 &&
+                                {msg.data.from_account_id === selfAccount?.accountID && msg.data.sent==1 &&
                                     <Text style={styles.messageSendStatus}>{t('sent')}</Text>
                                 }
-                                {msg.from_account_id === selfAccount?.accountID && msg.sent==0 &&
+                                {msg.data.from_account_id === selfAccount?.accountID && msg.data.sent==0 &&
                                     <Text style={styles.messageSendStatus}>{t('sending')}</Text>
                                 }
-                                {msg.from_account_id === selfAccount?.accountID && msg.sent==-1 &&
+                                {msg.data.from_account_id === selfAccount?.accountID && msg.data.sent==-1 &&
                                     <Text style={styles.messageSendStatus}>{t('sendFail')}</Text>
                                 }
                             </View>
@@ -516,20 +564,29 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                     { !recording && recordingURI.length == 0  && tempInputMessage.length > 0 &&
                     <TouchableOpacity style={[styles.button]} onPress=
                         {() => {
-                            let tempSendMsg = {
-                                "action" : "communication",
-                                "data": {
-                                    "message_id": uuid.v4(),
-                                    "from_account_id": selfAccount?.accountID,
-                                    "from_account_name": selfAccount?.accountName,
-                                    "to_account_id": targetAccount?.accountID,
-                                    "to_account_name": targetAccount?.accountName,
-                                    "message": tempInputMessage,
-                                    "msgtype": "text",
-                                    "timestamp": Date.now().toString()
+                            if(selfAccount?.accountID && selfAccount?.accountName && targetAccount?.accountID && targetAccount?.accountName){
+                                let tempSendMsg : Message = {
+                                    "action" : "communication",
+                                    "data": {
+                                        "messageID": uuid.v4(),
+                                        "from_account_id": selfAccount?.accountID,
+                                        "from_account_name": selfAccount?.accountName,
+                                        "to_account_id": targetAccount?.accountID,
+                                        "to_account_name": targetAccount?.accountName,
+                                        "msgtype": "general",
+                                        "timestamp": Date.now(),
+                                        "read": false,
+                                        "sent": 0,
+                                        "message": {
+                                            generalContent: tempInputMessage,
+                                            audioContent: '',
+                                            imageContent: '',
+                                            videoContent: ''
+                                        },
+                                    }
                                 }
+                                setMsg(tempSendMsg).then(() => sendMsg(tempSendMsg));
                             }
-                            setMsg(tempSendMsg).then(() => sendMsg(tempSendMsg));
                         }}
                     >
                         <Icon name='send'/>

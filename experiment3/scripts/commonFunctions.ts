@@ -5,6 +5,7 @@ import { useRef } from 'react';
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { Video, Image, Audio } from 'react-native-compressor';
+import { Message } from '@/scripts/messageInterfaces';
 
 
 let ws = useRef<WebSocket>(new WebSocket('wss://o8e86zvvfl.execute-api.ap-south-1.amazonaws.com/development/'));
@@ -85,7 +86,21 @@ export default function CommonFunctions() {
         }
     }
 
-    const storePendingMessage = async (tempSendMsg: {}) => {
+    const removeFromPendingMessageIfSent = async (messageID: string) => {
+        let pendingMessage = await getDataFromAsyncStore('pendingMessage');
+        if(pendingMessage && pendingMessage?.length > 0){
+            let temppendingMessage = JSON.parse(pendingMessage);
+            for(let i=0; i<temppendingMessage.length; i++){
+                if(temppendingMessage[i].data.messageID == messageID){
+                    temppendingMessage.splice(i, 1);
+                    setDataToAsyncStore('pendingMessage', JSON.stringify(temppendingMessage));
+                    break;
+                }
+            }
+        }
+    }
+
+    const storePendingMessage = async (tempSendMsg: Message) => {
         let pendingMessage = await getDataFromAsyncStore('pendingMessage');
         let temppendingMessage = [];
         if(pendingMessage){
@@ -152,6 +167,7 @@ export default function CommonFunctions() {
         removrDataFromAsyncStore,
         wsSend,
         ws,
+        removeFromPendingMessageIfSent,
         storePendingMessage,
         sendPendingMessages,
         writeBase64ToFile,

@@ -7,9 +7,11 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-na
 import { useTranslation } from "react-i18next";
 import { Icon } from 'react-native-elements'
 import * as FileSystem from 'expo-file-system';
-import { useVideoPlayer, VideoPlayer, VideoView } from 'expo-video';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import commonFunctions from '@/scripts/commonFunctions';
+import { Message } from '@/scripts/messageInterfaces';
 import { Video } from 'expo-av';
+import * as VideoThumbnails from 'expo-video-thumbnails';
 
 
 interface MapProps {
@@ -32,6 +34,7 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
     let photoOriginalBase64File = useRef("");
     let videoInBase64 = useRef("");
     let videoURI = useRef("");
+    let videoThumbnailURI = useRef("");
     let [takingVideo, setTakingVideo] = useState(false);
 
     let videoPlayerSource = useVideoPlayer(videoURI.current, player => { player.loop = true; player.play(); });
@@ -45,9 +48,9 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
         // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images', 'videos'],
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
+            //allowsEditing: true,
+            //aspect: [4, 3],
+            //quality: 1,
         });
         
         if (!result.canceled) {
@@ -61,6 +64,7 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
                 }
                 else if (result.assets[0].type === 'video') {
                     videoURI.current = result.assets[0].uri;
+                    videoThumbnailURI.current = (await VideoThumbnails.getThumbnailAsync( result.assets[0].uri, { time: 500, } )).uri;
                     setTimeout(() => {
                         setEditPhoto(false);
                     }, 1000);
@@ -89,13 +93,8 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
                     if (photo?.uri) {
                         fetch(photo.uri)
                         .then(response => response.blob())
-                        .then(blob => {
-                            const reader = new FileReader();
-                            reader.onloadend = async () => {
-                                photoOriginalBase64File.current = reader.result as string;
-                            }
-                        });
                         photoURI.current = photo.uri;
+                        photoOriginalBase64File.current = "data:image/*;base64"+ await FileSystem.readAsStringAsync(photo.uri, { encoding: FileSystem.EncodingType.Base64 });
                         setEditPhoto(false);
                     } else {
                         Alert.alert('takePicture - Error', 'Failed to capture photo.');
@@ -114,6 +113,7 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
                     const video = await cameraRef.current.recordAsync();
                     if (video?.uri) {
                         videoURI.current = video.uri;
+                        videoThumbnailURI.current = (await VideoThumbnails.getThumbnailAsync( video.uri, { time: 500, } )).uri;
                         setTakingVideo(false);
                         setEditPhoto(false);
                     } else {
@@ -157,32 +157,36 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
             let photoFileType = photoFileName?.split('.').pop();
 
             photoURI.current = await compressImage(photoURI.current);
-            const base64File = await FileSystem.readAsStringAsync(photoURI.current, { encoding: FileSystem.EncodingType.Base64 });
+            const compressedBase64File = await FileSystem.readAsStringAsync(photoURI.current, { encoding: FileSystem.EncodingType.Base64 });
 
             const tempMsgId = uuid.v4();
-            const tempMsg = {
-                "action" : "sendPhoto",
-                "data": {
-                    "message_id": tempMsgId,
-                    "from_account_id": selfAccount?.accountID,
-                    "from_account_name": selfAccount?.accountName,
-                    "to_account_id": targetAccount?.accountID,
-                    "to_account_name": targetAccount?.accountName,
-                    "message": "data:image/*;base64,"+base64File+"@#@"+(tempMsgId+"_"+photoFileName),
-                    "photoCompressedBase64": "data:image/*;base64,"+base64File,
-                    "msgtype": "photo",
-                    "timestamp": Date.now().toString(),
-                    "sent": 0
+            const tempMsg: Message = {
+                action : 'sendPhoto',
+                data: {
+                    messageID: tempMsgId,
+                    from_account_id: selfAccount?.accountID || '',
+                    from_account_name: selfAccount?.accountName || '',
+                    to_account_id: targetAccount?.accountID || '',
+                    to_account_name: targetAccount?.accountName || '',
+                    msgtype: 'photo',
+                    timestamp: Date.now(),
+                    message: {
+                        generalContent: '',
+                        audioContent: '',
+                        imageContent: { 
+                            fileName: tempMsgId+"_"+photoFileName,
+                            photoOriginalInBase64: photoOriginalBase64File.current,
+                            photoCompressedInBase64: "data:image/*;base64,"+compressedBase64File,
+                            type: 'image/' + photoFileType
+                        },
+                        videoContent: ''
+                    },
+                    read: false,
+                    sent: 0
                 }
             }
             setMsg(tempMsg).then(() => {
                 setTakePhoto(false);
-                const messageContent: any = {
-                    name: photoFileName,
-                    type: 'image/' + photoFileType,
-                    base64: photoOriginalBase64File.current
-                }
-                tempMsg.data.message = messageContent;
                 fetch('https://19h9udqig3.execute-api.ap-south-1.amazonaws.com/chatCommunication_sendBigFile', {
                     method: 'POST',
                     headers: {
@@ -196,14 +200,14 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
                     if (response.status !== 200) {
                         if (response.status === 413) { Alert.alert(t('payLoadTooBig')); }
                         for(let i=0; i<messages.length; i++){
-                            if(messages[i].messageID == tempMsg.data.message_id){
+                            if(messages[i].messageID == tempMsg.data.messageID){
                                 messages[i].sent = -1;
                                 break;
                             }
                         }
                     } else{
                         for(let i=0; i<messages.length; i++){
-                            if(messages[i].messageID == tempMsg.data.message_id){
+                            if(messages[i].messageID == tempMsg.data.messageID){
                                 messages[i].sent = 1;
                                 break;
                             }
@@ -214,38 +218,43 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
         }
         else if(videoURI.current.length > 0){
             videoPlayerSource.pause();
-            // Get the file detail from the recordingURI
             videoURI.current = await compressVideo(videoURI.current);
             let videoDetails = await FileSystem.getInfoAsync(videoURI.current);
             let videoFileName = videoDetails.uri.split('/').pop();
             let videoFileType = videoFileName?.split('.').pop();
-            // Create the JSON payload
+
+            const base64File = await FileSystem.readAsStringAsync(videoURI.current, { encoding: FileSystem.EncodingType.Base64 });
+            videoThumbnailURI.current = await compressImage(videoThumbnailURI.current);
+            const thumbnailInBase64File = await FileSystem.readAsStringAsync(videoThumbnailURI.current, { encoding: FileSystem.EncodingType.Base64 });
+
             const tempMsgId = uuid.v4();
-            const tempMsg = {
+            const tempMsg: Message = {
                 action : 'sendVideo',
                 data: {
-                    message: tempMsgId+"_"+videoFileName,
-                    message_id: tempMsgId,
-                    from_account_id: selfAccount?.accountID,
-                    from_account_name: selfAccount?.accountName,
-                    to_account_id: targetAccount?.accountID,
-                    to_account_name: targetAccount?.accountName,
+                    messageID: tempMsgId,
+                    from_account_id: selfAccount?.accountID || '',
+                    from_account_name: selfAccount?.accountName || '',
+                    to_account_id: targetAccount?.accountID || '',
+                    to_account_name: targetAccount?.accountName || '',
                     msgtype: 'video',
-                    timestamp: Date.now().toString(),
+                    timestamp: Date.now(),
+                    message: {
+                        generalContent: '',
+                        audioContent: '',
+                        imageContent: '',
+                        videoContent: { 
+                            fileName: tempMsgId+"_"+videoFileName,
+                            videoOriginalInBase64: base64File,
+                            thumbnailInBase64: "data:image/*;base64,"+thumbnailInBase64File,
+                            type: 'video/' + videoFileType
+                        }
+                    },
+                    read: false,
                     sent: 0
                 }
             }
             setMsg(tempMsg).then(async () => {
                 setTakePhoto(false);
-                // Read the file and convert it to base64
-                const base64File = await FileSystem.readAsStringAsync(videoURI.current, { encoding: FileSystem.EncodingType.Base64 });
-                const messageContent: any = {
-                    name: videoFileName,
-                    type: 'video/' + videoFileType,
-                    base64: "data:video/*;base64,"+base64File
-                }
-                tempMsg.data.message = messageContent;
-
                 // Send the POST request with the JSON payload
                 fetch('https://19h9udqig3.execute-api.ap-south-1.amazonaws.com/chatCommunication_sendBigFile', {
                     method: 'POST',
@@ -260,14 +269,14 @@ const Map: React.FC<MapProps> = ({ setMsg, targetAccount, selfAccount, setTakePh
                     if (response.status !== 200) {
                         if (response.status === 413) { Alert.alert(t('payLoadTooBig')); }
                         for(let i=0; i<messages.length; i++){
-                            if(messages[i].messageID == tempMsg.data.message_id){
+                            if(messages[i].messageID == tempMsg.data.messageID){
                                 messages[i].sent = -1;
                                 break;
                             }
                         }
                     } else{
                         for(let i=0; i<messages.length; i++){
-                            if(messages[i].messageID == tempMsg.data.message_id){
+                            if(messages[i].messageID == tempMsg.data.messageID){
                                 messages[i].sent = 1;
                                 break;
                             }
