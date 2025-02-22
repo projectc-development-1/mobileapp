@@ -13,5 +13,9 @@
     "sending": "發送中...",
     "sendFail": "發送失敗",
     "sent": "已發送",
-    "payLoadTooBig": "文件太大啦"
+    "payLoadTooBig": "文件太大啦",
+    "try@": "試試 @",
+    "chatFunctionTagSerect": "秘密",
+    "chatFunctionTagChoices": "選擇",
+    "chatFunctionTagBetYou": "打賭"
 }

@@ -110,6 +110,8 @@ Common command #################################
 npx expo install --fix
 
 expo init [project name]
+
+xcodebuild clean
  
 npx expo start
 npx expo run:ios
@@ -123,6 +125,7 @@ eas build -p android --profile preview
 
 Build projct #################################
 https://docs.expo.dev/build/setup/
+https://docs.expo.dev/build-reference/apk/
 
 Apple developer account
 https://developer.apple.com/account

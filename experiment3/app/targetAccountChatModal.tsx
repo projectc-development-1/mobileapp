@@ -6,12 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { Icon } from 'react-native-elements';
 import commonFunctions from '@/scripts/commonFunctions';
 import { Message, MessageContent } from '@/scripts/messageInterfaces';
-import TargetAccountChatTakePhoto from './targetAccountChatTakePhoto';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import ImageView from "react-native-image-viewing";
 import { ImageSource } from 'react-native-image-viewing/dist/@types';
 import { useVideoPlayer, VideoView } from 'expo-video';
+import TargetAccountChatTakePhoto from './targetAccountChatTakePhoto';
+import TargetAccountChatSerectTag from './targetAccountChatFunctionTags';
 
 interface MapProps {
     wsSend: (data: string) => void;
@@ -507,7 +508,12 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                         ))}
                     </ScrollView>
                 </TouchableWithoutFeedback>
-                <View style={{ flexDirection: 'row', justifyContent: 'center', paddingVertical: 10 }}>
+                <View style={styles.inputViewContainer}>
+                    {tempInputMessage.startsWith('@') &&
+                    <ScrollView style={styles.functionTagScrollViewContainer}>
+                        <TargetAccountChatSerectTag/>
+                    </ScrollView>
+                    }
                     {recording ? 
                     <Text></Text> : 
                     recordingURI.length > 0 ?
@@ -515,8 +521,11 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                         <Icon name='play-arrow'/>
                     </TouchableOpacity> :
                     <TextInput
+                        placeholder={t("try@")}
+                        placeholderTextColor='rgb(144, 144, 144)'
                         style={[styles.input, { height: Math.max(30, textInputHeight), width: `${textInputWidth}%` }]}
                         value={tempInputMessage}
+                        onFocus={() => {setTimeout(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, 300);}}
                         onChangeText={setTempInputMessage}
                         multiline 
                         onContentSizeChange={(event) => {
@@ -531,7 +540,8 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                                 setTextInputWidth(70);
                             }
                         }}
-                    />
+                    >
+                    </TextInput>
                     }
 
                     {recordingURI.length > 0 && 
@@ -622,6 +632,18 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         top: '8%',
         alignSelf: 'center',
+    },
+    functionTagScrollViewContainer: {
+        zIndex: 5,
+        left: 5,
+        bottom: 50,
+        width: '25%',
+        position: 'absolute',
+    },
+    inputViewContainer: {
+        flexDirection: 'row', 
+        justifyContent: 'center', 
+        paddingVertical: 10
     },
     videoView: {
         width: 320,

@@ -13,5 +13,9 @@
     "sending": "Sending...",
     "sendFail": "Send Fail",
     "sent": "Sent",
-    "payLoadTooBig": "Oh, the file is too big"
+    "payLoadTooBig": "Oh, the file is too big",
+    "try@": "Try @",
+    "chatFunctionTagSerect": "Secret",
+    "chatFunctionTagChoices": "Choices",
+    "chatFunctionTagBetYou": "Bet You"
   }
