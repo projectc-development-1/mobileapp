@@ -1,29 +1,24 @@
-import React, { useRef, useState } from 'react';
-import { StyleSheet, TouchableWithoutFeedback, View, Keyboard, TouchableOpacity, Text, KeyboardAvoidingView, Platform, ScrollView, Image, Alert } from 'react-native';
-import uuid from 'react-native-uuid';
-import { TextInput } from 'react-native';
-import { Icon } from 'react-native-elements';
-import { Message } from '@/scripts/messageInterfaces';
-import ImageView from "react-native-image-viewing";
-import { VideoView } from 'expo-video';
+import React from 'react';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+interface MapProps {
+    setTextInputMode: React.Dispatch<React.SetStateAction<string>>;   
+}
 
-
-
-const Map = () => {
+const Map: React.FC<MapProps> = ({ setTextInputMode }) => {
     const { t } = useTranslation();
     return (
         <View style={styles.container}>
-            <View style={styles.functionItemContainer}>
+            <TouchableOpacity onPress={() => setTextInputMode('')} style={[styles.functionItemContainer, {backgroundColor: 'rgba(255, 173, 237, 0.88)'}]}>
                 <Text style={styles.functionItemName}>{t("chatFunctionTagSerect")}</Text>
-            </View>
-            <View style={styles.functionItemContainer}>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setTextInputMode('')} style={[styles.functionItemContainer, {backgroundColor: 'rgba(129, 183, 255, 0.88)'}]}>
                 <Text style={styles.functionItemName}>{t("chatFunctionTagChoices")}</Text>
-            </View>
-            <View style={styles.functionItemContainer}>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setTextInputMode('')} style={[styles.functionItemContainer, {backgroundColor: 'rgba(255, 115, 115, 0.88)'}]}>
                 <Text style={styles.functionItemName}>{t("chatFunctionTagBetYou")}</Text>
-            </View>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -43,7 +38,6 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         width: '100%',
         borderBlockColor: 'black',
-        backgroundColor: 'rgba(204, 218, 255, 0.88)',
         borderWidth: 1,
         marginVertical: 2,
     },

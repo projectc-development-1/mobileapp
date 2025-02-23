@@ -16,6 +16,9 @@
     "payLoadTooBig": "文件太大啦",
     "try@": "試試 @",
     "chatFunctionTagSerect": "秘密",
+    "chatFunctionTagSerectSetQuestion": "問題",
+    "chatFunctionTagSerectSetAnswer": "答案",
+    "charFunctionTagSerectSetReward": "你的秘密作為獎勵",
     "chatFunctionTagChoices": "選擇",
     "chatFunctionTagBetYou": "打賭"
 }

@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { StyleSheet, TouchableWithoutFeedback, View, Keyboard, TouchableOpacity, Text, KeyboardAvoidingView, Platform, ScrollView, Image, Alert } from 'react-native';
 import uuid from 'react-native-uuid';
-import { TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Icon } from 'react-native-elements';
 import commonFunctions from '@/scripts/commonFunctions';
@@ -13,6 +12,7 @@ import { ImageSource } from 'react-native-image-viewing/dist/@types';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import TargetAccountChatTakePhoto from './targetAccountChatTakePhoto';
 import TargetAccountChatSerectTag from './targetAccountChatFunctionTags';
+import TargetAccountChatModalInputText from './targetAccountChatModalInputText';
 
 interface MapProps {
     wsSend: (data: string) => void;
@@ -24,6 +24,7 @@ interface MapProps {
 const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => {
     const { t } = useTranslation();
     const { storePendingMessage, compressAudio, removeFromPendingMessageIfSent } = commonFunctions();
+    const [textInputMode, setTextInputMode] = useState('general');
     const [textInputHeight, setTextInputHeight] = useState(0);
     const [textInputWidth, setTextInputWidth] = useState(70);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -511,7 +512,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                 <View style={styles.inputViewContainer}>
                     {tempInputMessage.startsWith('@') &&
                     <ScrollView style={styles.functionTagScrollViewContainer}>
-                        <TargetAccountChatSerectTag/>
+                        <TargetAccountChatSerectTag setTextInputMode={setTextInputMode}/>
                     </ScrollView>
                     }
                     {recording ? 
@@ -520,28 +521,7 @@ const Map: React.FC<MapProps> = ({ wsSend, ws, targetAccount, selfAccount }) => 
                     <TouchableOpacity style={[styles.playrecordingButton]} onPress={() => playRecording(recordingURI)}>
                         <Icon name='play-arrow'/>
                     </TouchableOpacity> :
-                    <TextInput
-                        placeholder={t("try@")}
-                        placeholderTextColor='rgb(144, 144, 144)'
-                        style={[styles.input, { height: Math.max(30, textInputHeight), width: `${textInputWidth}%` }]}
-                        value={tempInputMessage}
-                        onFocus={() => {setTimeout(() => { scrollViewRef.current?.scrollToEnd({ animated: true }); }, 300);}}
-                        onChangeText={setTempInputMessage}
-                        multiline 
-                        onContentSizeChange={(event) => {
-                            if(event.nativeEvent.contentSize.height < 66){
-                                setTextInputHeight(event.nativeEvent.contentSize.height);
-                            }
-                        }}
-                        onChange={(event) => {
-                            if(event.nativeEvent.text.length > 0){
-                                setTextInputWidth(60);
-                            }else{
-                                setTextInputWidth(70);
-                            }
-                        }}
-                    >
-                    </TextInput>
+                    <TargetAccountChatModalInputText tempInputMessage={tempInputMessage} setTempInputMessage={setTempInputMessage} setTextInputHeight={setTextInputHeight} setTextInputWidth={setTextInputWidth} textInputHeight={textInputHeight} textInputWidth={textInputWidth} scrollViewRef={scrollViewRef} />
                     }
 
                     {recordingURI.length > 0 && 

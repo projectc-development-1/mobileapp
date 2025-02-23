@@ -16,6 +16,9 @@
     "payLoadTooBig": "Oh, the file is too big",
     "try@": "Try @",
     "chatFunctionTagSerect": "Secret",
+    "chatFunctionTagSerectSetQuestion": "Question",
+    "chatFunctionTagSerectSetAnswer": "Answer",
+    "charFunctionTagSerectSetReward": "Your serect as reward",
     "chatFunctionTagChoices": "Choices",
     "chatFunctionTagBetYou": "Bet You"
   }
